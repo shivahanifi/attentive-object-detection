@@ -29,4 +29,12 @@ cv.threshold(src, thresh, maxval, type[, dst])
   5. cv.THRESH_TOZERO_INV
 
 The method returns two outputs. The first is the threshold that was used and the second output is the thresholded image.
+In this example, we start by loading an image and converting it to grayscale. We then apply a threshold to create a binary image where all pixels above the threshold are white and all pixels below the threshold are black.
 
+Next, we use cv2.findContours() to find contours in the binary image. We loop over each contour and use cv2.contourArea() to check if the contour is large enough to be considered a valid region (you can adjust the threshold to your liking).
+
+For each valid contour, we use cv2.boundingRect() to get the bounding box coordinates. We also set the contour pixels to white in a mask image using the cv2.drawContours() function.
+
+Finally, we draw a green rectangle around each valid contour on the original image using cv2.rectangle(), but we only draw the rectangle where the corresponding pixels are white in the mask image. This ensures that the bounding boxes only appear around the white areas in the image.
+
+We then display the image with bounding boxes using cv2.imshow() and wait for a key press before closing the window.

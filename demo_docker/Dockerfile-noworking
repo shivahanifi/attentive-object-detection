@@ -1,0 +1,162 @@
+#start from image passed by argument during build process. Usually it is an ubuntu image plus mesa library.
+ARG START_IMG="none"
+FROM $START_IMG
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies given in documentation in superbuild
+# https://github.com/robotology/robotology-superbuild#linux
+RUN mkdir -p /etc/bash_completion.d/ &&\
+    apt-get update &&\
+    apt-get install -y \
+        # MISC
+        bash-completion \
+        qt5-default \
+        git \
+        cmake \
+        cmake-curses-gui \ 
+        build-essential \
+        vim \
+        #core
+        coinor-libipopt-dev \ 
+        libboost-system-dev \
+        libboost-filesystem-dev \
+        libboost-thread-dev \
+        libopencv-dev \
+        libode-dev \
+        liblua5.1-dev \
+        lua5.1 \ 
+        swig \ 
+        libsdl1.2-dev \
+        libxml2-dev\
+        # YARP
+        libace-dev \
+        libeigen3-dev \
+        libgsl0-dev \
+        libedit-dev \
+        libqcustomplot-dev \
+        qtmultimedia5-dev \
+        qtdeclarative5-dev \
+        libqt5opengl5-dev \
+        qttools5-dev \
+        libtinyxml-dev \
+        #yarp-gui
+        qtbase5-dev \
+        qtdeclarative5-dev \
+        qtmultimedia5-dev \
+        qml-module-qtquick2 \
+        qml-module-qtquick-window2 \
+        qml-module-qtmultimedia \
+        qml-module-qtquick-dialogs \
+        qml-module-qtquick-controls \
+        qml-module-qt-labs-folderlistmodel \
+        qml-module-qt-labs-settings 
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+
+#In order to install cmake 12.0 required by superbuild
+RUN apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget &&\
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - &&\
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' &&\
+    apt-get update
+RUN apt-get install -y kitware-archive-keyring
+RUN apt-key --keyring /etc/apt/trusted.gpg del C1F34CDD40CD72DA
+#RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+#RUN dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+RUN apt-get install -y libssl-dev
+#RUN apt-get install -y cmake \
+#    &&\
+#    rm -rf /var/lib/apt/lists/* 
+RUN apt-get install build-essential
+RUN wget http://www.cmake.org/files/v3.16/cmake-3.16.0.tar.gz
+RUN tar xf cmake-3.16.0.tar.gz
+
+RUN cd cmake-3.16.0 && ./configure && make && make install
+
+
+#Some definitions
+ARG PROJECTS_DIR=/projects
+ARG CMAKE_GENERATOR="Unix Makefiles"
+ARG BUILD_TYPE=Release
+ARG CMAKE_EXTRA_OPTIONS=-j2
+ARG INSTALL_DIR="/usr/local"
+ARG release="tags/v2021.08 -b master_branch"
+ARG sbtag="Stable"
+#RUN if [ "$release" = "Stable" ]; then echo STABLE version is building; elif [ "$release" = "Ustable" ]; then echo UNSTABLE version is building && ${TAG}=Unstable; else echo SPECIFIC version $release is building && branch=$release; fi
+
+
+RUN echo "DEBUG ==>  Release:" ${release} &&\
+    echo "DEBUG ==>  TAG: " ${tag}
+
+
+# Setup entrypoint
+ARG ROBOTOLOGY_INITIALIZATION_FILE=/usr/local/bin/setup_robotology_tdd.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY setup.sh ${ROBOTOLOGY_INITIALIZATION_FILE}
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+
+RUN mkdir ${PROJECTS_DIR} && cd ${PROJECTS_DIR} &&\
+    git clone https://github.com/robotology/ycm.git && \
+    cd ycm && \
+#    git checkout v0.13.0 && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make -j `nproc` install
+
+#### Starts custom ####
+
+#### Install python ####
+#RUN apt-get remove --purge python3.6
+#RUN apt-get install -y libmtdev-dev
+RUN apt-get install -y python-dev
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update && apt-get install -y \
+        python3.5 \
+        python3-pip
+
+RUN apt-get update && apt-get install -y \
+#        python3-distutils \
+        python3-setuptools
+
+RUN apt-get update
+
+
+#### Dependencies ####
+RUN apt-get install -y libgoogle-glog-dev libboost-all-dev libhdf5-serial-dev libatlas-base-dev
+
+#### Install python bindings ####
+RUN git config --global user.name icub
+RUN git config --global user.email icub@iit.it
+
+#### Install swig ####
+#RUN apt-get install swig
+RUN apt-get install automake
+RUN rm /opt/conda/bin/python
+RUN ln -s /usr/bin/python3.5 /opt/conda/bin/python
+RUN cd ${PROJECTS_DIR} && \
+    wget https://sourceforge.net/projects/swig/files/swig/swig-4.0.0/swig-4.0.0.tar.gz && \
+    tar xf swig-4.0.0.tar.gz &&\
+    cd swig-4.0.0 &&\
+    ./autogen.sh &&\
+    ./configure && make && make install &&\
+    ln -s /usr/local/bin/swig /usr/bin/swig
+#### Compile yarp ####
+# Install YARP with GUIS and Python bindings
+#RUN cd ${PROJECTS_DIR} && \
+#    git clone https://github.com/robotology/yarp.git &&\
+#    cd yarp &&\
+#    git checkout v3.4.6
+#RUN cd ${PROJECTS_DIR} && \
+#    cd yarp && \
+#    mkdir build && cd build &&\
+#    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+#          -DYARP_COMPILE_BINDINGS=ON \
+#          -DCREATE_PYTHON=ON \
+#          -DYARP_USE_PYTHON_VERSION=3.5 \
+#          .. &&\
+#    make -j `nproc` install
+
+#RUN export PYTHONPATH=/projects/robotology-superbuild/build/src/YARP/lib/python3
+
+#RUN yarp namespace /cer04
+#RUN yarp conf 192.168.100.10 10000

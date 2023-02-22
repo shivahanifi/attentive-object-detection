@@ -103,3 +103,4 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
 4. `Unexpected error!!! too many values to unpack (expected 2)`
 
     The error can occur when calling the `cv2.findContours()` function if the version of OpenCV being used returns a different number of values than expected. In older versions of OpenCV (prior to version 4.0), the `cv2.findContours()` function returned two values: contours and hierarchy. However, in newer versions of OpenCV (version 4.0 and later), `cv2.findContours()` only returns one value: contours. In this case, I modified the code to handle both cases using an if statement to check the number of values returned by `cv2.findContours()`. This approach should work for both newer and older versions of OpenCV.
+5. No error, but no boundin box for the objects

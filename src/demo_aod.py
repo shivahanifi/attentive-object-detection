@@ -243,7 +243,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 print(norm_map.shape)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(raw_hm_sq_255, 100, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
                                 print(thresh_hm.dtype)
 
@@ -254,10 +254,11 @@ class VisualTargetDetection(yarp.RFModule):
                                 else:
                                     contours = contours_info[0]
 
-                                # print(len(contours))
-                                # for contour in contours:
-                                #     x,y,w,h = cv2.boundingRect(contour)
-                                hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, (0,0,255), 2)
+                                print(len(contours))
+                                for contour in contours:
+                                    # Extract (x,y) of left top corner, width, height
+                                    x,y,w,h = cv2.boundingRect(contour)
+                                    hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0,255), 2)
 
 
                                 # Visualization

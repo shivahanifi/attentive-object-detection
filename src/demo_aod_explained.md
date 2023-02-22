@@ -79,6 +79,24 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
   - `contourIdx`: index of contours (useful when drawing individual contour. To draw all contours, pass -1)
   - Remaining arguments are color, thickness etc
 
+-  Bounding Rectangle 
+    There are two types of bounding rectangles:
+    1. Straight Bounding Rectangle
+
+        It doesn't consider the rotation of the object. So area of the bounding rectangle won't be minimum.
+        ```
+        cv.boundingRect(array)
+        ```
+    2. Rotated Rectangle
+    
+        Here, bounding rectangle is drawn with minimum area, so it considers the rotation also. 
+        ```
+        cv.minAreaRect(points)
+        ```
+        It returns a Box2D structure which contains following details - ( center (x,y), (width, height), angle of rotation ).
+
+
+
 ## Errors
 1. YARP (namespace, detect, ports)
 

@@ -254,14 +254,15 @@ class VisualTargetDetection(yarp.RFModule):
                                 else:
                                     contours = contours_info[0]
 
-                                print(len(contours))
-                                thresh_hm_area = cv2.contourArea(contours.astype(np.float32))
-                                largest_contour = max(contours, key=cv2.contourArea)
-                                # Extract (x,y) of left top corner, width, height
-                                x,y,w,h = cv2.boundingRect(largest_contour)
-                                # Draw the bounding box on the original image
-                                hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
-                                hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+                                if len(contours) > 0:
+                                    largest_contour = max(contours, key=cv2.contourArea)
+                                    # Extract (x,y) of left top corner, width, height
+                                    x,y,w,h = cv2.boundingRect(largest_contour)
+                                    # Draw the bounding box on the original image
+                                    hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
+                                    hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+                                else:
+                                    print("No contours found")
 
 
                                 #hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,255,0), 2)

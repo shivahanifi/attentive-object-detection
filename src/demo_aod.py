@@ -243,7 +243,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 print(norm_map.shape)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(raw_hm_sq_255, 100, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
                                 print(thresh_hm.dtype)
 

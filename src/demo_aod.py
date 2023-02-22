@@ -257,7 +257,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 print(len(contours))
                                 for contour in contours:
                                     x,y,w,h = cv2.boundingRect(contour)
-                                    hm_bbox = cv2.rectangle(frame_raw, (x,y), (x+w,y+h), (0,255,0), 2)
+                                    hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0,255), 2)
 
 
                                 # Visualization

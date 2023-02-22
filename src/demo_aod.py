@@ -243,7 +243,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 print(norm_map.shape)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 127, 255, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
                                 print(thresh_hm.dtype)
 
@@ -255,17 +255,24 @@ class VisualTargetDetection(yarp.RFModule):
                                     contours = contours_info[0]
 
                                 print(len(contours))
-                                for contour in contours:
-                                    # Extract (x,y) of left top corner, width, height
-                                    x,y,w,h = cv2.boundingRect(contour)
-                                    hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0,255), 2)
+                                largest_contour = max(contours, key=cv2.contourArea)
+                                # Extract (x,y) of left top corner, width, height
+                                x,y,w,h = cv2.boundingRect(largest_contour)
+                                # Draw the bounding box on the original image
+                                hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
+                                cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+
+
+                                #hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,255,0), 2)
+                                print(hm_bbox.shape)
 
 
                                 # Visualization
                                 # Draw the raw_frame and the bbox
                                 start_point = (int(head_box[0]), int(head_box[1]))
                                 end_point = (int(head_box[2]), int(head_box[3]))
-                                img_bbox = cv2.rectangle(hm_bbox,start_point,end_point, (0, 255, 0),2)                      
+                                img_bbox = cv2.rectangle(hm_bbox,start_point,end_point, (0, 255, 0),2)
+                                print(img_bbox.shape)                     
                                 
                                 # The arrow mode
                                 if self.args.vis_mode == 'arrow':

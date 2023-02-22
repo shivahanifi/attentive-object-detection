@@ -229,17 +229,21 @@ class VisualTargetDetection(yarp.RFModule):
 
                                 # forward pass
                                 raw_hm, _, inout = model(frame, head_channel, head)
+                                print(raw_hm.shape)
 
                                 # heatmap modulation
-                                raw_hm_255 = raw_hm.cpu().detach().numpy() * 255
-                                raw_hm_sq = raw_hm_255.squeeze()
+                                raw_hm = raw_hm.cpu().detach().numpy()
+                                raw_hm_255 = raw_hm * 255
+                                raw_hm_sq = raw_hm.squeeze()
+                                raw_hm_sq_255 = raw_hm_255.squeeze()
                                 inout = inout.cpu().detach().numpy()
                                 inout = 1 / (1 + np.exp(-inout))
                                 inout = (1 - inout) * 255
                                 norm_map = imresize(raw_hm_sq, (height, width)) - inout
+                                print(norm_map.shape)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(raw_hm, 0.5, 1, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(raw_hm_sq, 0.5, 1, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
                                 contours, hierarchy = cv2.findContours(thresh_hm, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                                 print(contours.shape)

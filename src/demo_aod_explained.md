@@ -4,7 +4,7 @@ This is to clearly explain the modifications of the [online-vtd](https://github.
 - [Recap](#recap)
 - [Goal](#goal)
 - [Approach](#approach)
-- [Possible Errors](#possible-errors)
+- [Errors](#errors)
 
                                    
 ## Recap
@@ -79,9 +79,15 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
   - `contourIdx`: index of contours (useful when drawing individual contour. To draw all contours, pass -1)
   - Remaining arguments are color, thickness etc
 
-## Possible Errors
-- YARP (namespace, detect, ports)
+## Errors
+1. YARP (namespace, detect, ports)
 
-  For errors such as not detecting the YARP or ports or connection make sure to check the `yarp namespace` for both the docker and local machine to be the same. (After using it with iCub you need to change them back to the root). You may also use `yarp detect` to make sure the local machine can find YARP. A final check would be to check the visibility of ports by `yarp name list`.
+    For errors such as not detecting the YARP or ports or connection make sure to check the `yarp namespace` for both the docker and local machine to be the same. (After using it with iCub you need to change them back to the root). You may also use `yarp detect` to make sure the local machine can find YARP. A final check would be to check the visibility of ports by `yarp name list`.
 
-- `Unexpected error!!! src is not a numpy array, neither a scalar`
+2. `Unexpected error!!! src is not a numpy array, neither a scalar`
+  
+    Using the `raw_hm` which is the direct output of the model was causing this error since it was not converted to a Numpy array. using it after being converted to Numpy solved the problem.
+
+3. `OpenCV Error: Unsupported format or combination of formats ([Start]FindContours supports only CV_8UC1 images when mode != CV_RETR_FLOODFILL otherwise supports CV_32SC1 images only)`
+
+    This error message suggests that there is an issue with the format or combination of formats of the image being processed by the "FindContours" function in OpenCV. The shape of the raw_hm at this step is (1,1), which means (np.array([[a]]))

@@ -239,13 +239,14 @@ class VisualTargetDetection(yarp.RFModule):
                                 inout = inout.cpu().detach().numpy()
                                 inout = 1 / (1 + np.exp(-inout))
                                 inout = (1 - inout) * 255
-                                norm_map = imresize(raw_hm_sq, (height, width)) - inout
+                                norm_map = imresize(raw_hm_sq_255, (height, width)) - inout
                                 print(norm_map.shape)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(raw_hm_sq, 0.5, 1, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(raw_hm_sq_255, 100, 255, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
-                                contours, hierarchy = cv2.findContours(thresh_hm, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                print(thresh_hm.dtype)
+                                contours, hierarchy = cv2.findContours(thresh_hm.astype(np.unit8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                                 print(contours.shape)
                                 for contour in contours:
                                     x,y,w,h = cv2.boundingRect(contour)
@@ -262,7 +263,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 if self.args.vis_mode == 'arrow':
                                     # in-frame gaze
                                     if inout < self.args.out_threshold: 
-                                        pred_x, pred_y = evaluation.argmax_pts(raw_hm_sq)
+                                        pred_x, pred_y = evaluation.argmax_pts(raw_hm_sq_255)
                                         norm_p = [pred_x/output_resolution, pred_y/output_resolution]
                                         circs = cv2.circle(img_bbox, (norm_p[0]*width, norm_p[1]*height),  height/50.0, (35, 225, 35), -1)
                                         line = cv2.line(circs, (norm_p[0]*width,(head_box[0]+head_box[2])/2), (norm_p[1]*height,(head_box[1]+head_box[3])/2), (255, 0, 0), 2)

@@ -84,10 +84,19 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
 
     For errors such as not detecting the YARP or ports or connection make sure to check the `yarp namespace` for both the docker and local machine to be the same. (After using it with iCub you need to change them back to the root). You may also use `yarp detect` to make sure the local machine can find YARP. A final check would be to check the visibility of ports by `yarp name list`.
 
+<mark>Using the heatmap with values 0-1</mark>
+
 2. `Unexpected error!!! src is not a numpy array, neither a scalar`
   
     Using the `raw_hm` which is the direct output of the model was causing this error since it was not converted to a Numpy array. using it after being converted to Numpy solved the problem.
 
 3. `OpenCV Error: Unsupported format or combination of formats ([Start]FindContours supports only CV_8UC1 images when mode != CV_RETR_FLOODFILL otherwise supports CV_32SC1 images only)`
 
-    This error message suggests that there is an issue with the format or combination of formats of the image being processed by the "FindContours" function in OpenCV. The shape of the raw_hm at this step is (1,1), which means (np.array([[a]]))
+    This error message suggests that there is an issue with the format or combination of formats of the image being processed by the "FindContours" function in OpenCV. 
+
+    Considering what is written in the error message, the image format should be `CV_8UC1` in our case. However, the shape and type of the source image for `cv2.findContours` is as below:
+    ```
+      print(thresh_hm.shape) #(64,64)
+      print(thresh_hm.dtype) #float32
+    ```
+    To convert an image of dtype float32 to the CV_8UC1 format in OpenCV, you need to first scale the pixel values to the range [0, 255], and then convert the data type to uint8 using the astype() method. Considering this I will discard the 0-1 values for the heatmap, and use the 0-255 from now on.

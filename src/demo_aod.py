@@ -260,7 +260,7 @@ class VisualTargetDetection(yarp.RFModule):
                                 x,y,w,h = cv2.boundingRect(largest_contour)
                                 # Draw the bounding box on the original image
                                 hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
-                                cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+                                hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
 
 
                                 #hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,255,0), 2)

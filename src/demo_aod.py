@@ -240,13 +240,12 @@ class VisualTargetDetection(yarp.RFModule):
 
                                 # Heatmap bbox extraction
                                 ret, thresh_hm = cv2.threshold(raw_hm, 0.5, 1, cv2.THRESH_BINARY)
+                                print(thresh_hm.shape)
                                 contours, hierarchy = cv2.findContours(thresh_hm, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                                mask = np.zeros_like(thresh_hm)
+                                print(contours.shape)
                                 for contour in contours:
-                                   if cv2.contourArea(contour) > 0:  # Skip small contours
-                                        x,y,w,h = cv2.boundingRect(contour)
-                                        mask[contour != 0] = 255  # Set contour pixels to white in mask
-                                        hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0, 255), 2)
+                                    x,y,w,h = cv2.boundingRect(contour)
+                                    hm_bbox = cv2.rectangle(frame_raw, (x,y), (x+w,y+h), (0,255,0), 2)
 
 
                                 # Visualization

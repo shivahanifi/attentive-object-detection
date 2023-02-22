@@ -246,12 +246,13 @@ class VisualTargetDetection(yarp.RFModule):
                                 ret, thresh_hm = cv2.threshold(raw_hm_sq_255, 100, 255, cv2.THRESH_BINARY)
                                 print(thresh_hm.shape)
                                 print(thresh_hm.dtype)
-                                
-                                # Check if cv2.findContours() returns two values (for OpenCV versions prior to 4.0)
-                                try:
-                                    contours, hierarchy = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                                except ValueError:  # For OpenCV version 4.0 and later
-                                    contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                                # Check the number of values returned by cv2.findContours()
+                                contours_info = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                if len(contours_info) == 2:
+                                    contours, hierarchy = contours_info
+                                else:
+                                    contours = contours_info[0]
 
                                 print(len(contours))
                                 for contour in contours:

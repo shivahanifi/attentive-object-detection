@@ -99,4 +99,5 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
       print(thresh_hm.shape) #(64,64)
       print(thresh_hm.dtype) #float32
     ```
-    To convert an image of dtype float32 to the CV_8UC1 format in OpenCV, you need to first scale the pixel values to the range [0, 255], and then convert the data type to uint8 using the astype() method. Considering this I will discard the 0-1 values for the heatmap, and use the 0-255 from now on.
+    To convert an image of dtype float32 to the CV_8UC1 format in OpenCV, you need to first scale the pixel values to the range [0, 255], and then convert the data type to uint8 using the astype() method. Considering this I will discard the 0-1 values for the heatmap, and use the 0-255 from now on. The error was solved using `raw_hm_sq_255` for thresholding and the `thresh_hm.astype(np.uint8)` as the source image.
+4. `Unexpected error!!! too many values to unpack (expected 2)`

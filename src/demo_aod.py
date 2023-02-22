@@ -255,6 +255,7 @@ class VisualTargetDetection(yarp.RFModule):
                                     contours = contours_info[0]
 
                                 print(len(contours))
+                                thresh_hm_area = cv2.contourArea(contours.astype(np.float32))
                                 largest_contour = max(contours, key=cv2.contourArea)
                                 # Extract (x,y) of left top corner, width, height
                                 x,y,w,h = cv2.boundingRect(largest_contour)

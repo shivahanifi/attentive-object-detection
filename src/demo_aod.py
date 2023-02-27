@@ -238,7 +238,7 @@ class VisualTargetDetection(yarp.RFModule):
 
                                 # forward pass
                                 raw_hm, _, inout = model(frame, head_channel, head)
-                                print(raw_hm.shape)
+                                print("raw_hm has the shape: ", raw_hm.shape)
 
                                 # heatmap modulation
                                 raw_hm = raw_hm.cpu().detach().numpy()
@@ -252,29 +252,22 @@ class VisualTargetDetection(yarp.RFModule):
                                 print("norm_map has the shape ", norm_map.shape, "and the type ", norm_map.dtype)
 
                                 # Heatmap bbox extraction
-
+                                #Heatmap binary thresholding
                                 ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
                                 print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
 
-                                # Visualizing the Thresholded Heatmap
+                                # Visualizing the thresholded Heatmap
                                 thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
                                 self.out_buf_thresh_array[:, :] = thresh_hm_array
                                 self.out_port_thresh_image.write(self.out_buf_thresh_image)
-                                
 
-
-                                # Check the number of values returned by cv2.findContours()
+                                # Extract the contours of thresholded heatmap
                                 _, contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                                #if len(contours_info) == 2:
-                                #    contours, hierarchy = contours_info
-                                #else:
-                                 #   contours = contours_info[0]
-                                print("Found", len(contours), "contours")
+                                print("Found", len(contours), "contours")                                
                                 
-
+                                # Drawing the contours
                                 print("fram_raw as a numpy array has the shape ", np.asarray(frame_raw).shape, "and the type ", np.asarray(frame_raw).dtype)
-                                
-                                hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 255, 0), 2)
+                                hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 0, 255), 2)
 
                                # Make sure contours not empty
                                 #if len(contours) > 0:
@@ -332,9 +325,9 @@ class VisualTargetDetection(yarp.RFModule):
                                     img_blend_bbox = cv2.addWeighted(rgba_map, 0.2,  np.asarray(img_bbox), 0.8, 0, dtype=cv2.CV_8U)
 
                                     # Connect to the output port
-                                    #img_blend_array = np.asarray(img_blend_bbox)
-                                    #self.out_buf_human_array[:, :] = img_blend_array
-                                    #self.out_port_human_image.write(self.out_buf_human_image)
+                                    img_blend_array = np.asarray(img_blend_bbox)
+                                    self.out_buf_human_array[:, :] = img_blend_array
+                                    self.out_port_human_image.write(self.out_buf_human_image)
 
                 except Exception as err:
                     print("An error occured while extracting the poses from OpenPose data")

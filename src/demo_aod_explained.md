@@ -108,6 +108,8 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
   
     Using the `raw_hm` which is the direct output of the model was causing this error since it was not converted to a Numpy array. using it after being converted to Numpy solved the problem.
 
+<mark>Using the heatmap with values 0-255</mark>
+
 3. `OpenCV Error: Unsupported format or combination of formats ([Start]FindContours supports only CV_8UC1 images when mode != CV_RETR_FLOODFILL otherwise supports CV_32SC1 images only)`
 
     This error message suggests that there is an issue with the format or combination of formats of the image being processed by the "FindContours" function in OpenCV. 
@@ -128,4 +130,32 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
 
     An assertion is a statement in the code that the programmer believes to be true at that point in the program's execution. When an assertion fails, it means that the assumption made by the programmer is incorrect, and the program cannot continue executing. The reason might be that the data type of the input contour is not CV_32F or CV_32S. The function requires the input contour data to be in either single-precision floating-point format (CV_32F) or 32-bit signed integer format (CV_32S).
 
-    Converting the input image type to float32 did not solve the problem.
+<mark>Errors Solved</mark>    
+In order to solve the error, I changed the code to first get the output of the thresholded heatmap, and then draw the contour as it is. I recognized that the value `contours` was reflecting the exact shape and data type as the input image, which is wrong. This was due to considring only one or two outputs for the `cv2.findContours` function. Replacing it with the code below solved the problem.
+```
+  _, contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                print("Found", len(contours), "contours")
+``` 
+For drawing the contours I used: 
+```
+hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 255, 0), 2)
+```
+
+Printing some of the important information resulted in:
+<img src= Img/values.png width=400>
+
+In order to visualize the thresholded heatmap, I defined another port called `/vtd/thresh:o` and connected it to another `yarp view` module. The related code:
+```
+# Visualizing the thresholded Heatmap
+thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
+self.out_buf_thresh_array[:, :] = thresh_hm_array
+self.out_port_thresh_image.write(self.out_buf_thresh_image)
+```
+The result of visualizing all together:
+<img src="Img/img_hm_thresh.png" width=400>
+
+
+
+
+
+  

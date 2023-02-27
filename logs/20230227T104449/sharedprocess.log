@@ -1,0 +1,4 @@
+2023-02-27 10:44:51.097 [info] Started initializing default profile extensions in extensions installation folder. file:///root/.vscode/extensions
+2023-02-27 10:44:51.265 [warning] Failed to create default profile extensions manifest in extensions installation folder. file:///root/.vscode/extensions Unable to create file 'vscode-userdata:/root/.vscode/extensions/extensions.json' that already exists when overwrite flag is not set
+2023-02-27 10:44:51.265 [info] Completed initializing default profile extensions in extensions installation folder. file:///root/.vscode/extensions
+2023-02-27 10:44:51.359 [info] Starting worker process with pid 26657 (type: fileWatcher, window: 1).

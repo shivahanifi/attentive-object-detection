@@ -58,12 +58,21 @@ class VisualTargetDetection(yarp.RFModule):
         self.in_buf_human_image.setExternal(self.in_buf_human_array.data, self.in_buf_human_array.shape[1],
                                             self.in_buf_human_array.shape[0])
         print('{:s} opened'.format('/vtd/image:i'))
-        
-        
+                
         # Input port for openpose data
         self.in_port_human_data = yarp.BufferedPortBottle()
         self.in_port_human_data.open('/vtd/data:i')
         print('{:s} opened'.format('/vtd/data:i'))
+
+        # Output port for thresholded heatmap
+        self.out_port_thresh_image = yarp.Port()
+        self.out_port_thresh_image.open('/vtd/thresh:o')
+        self.out_buf_thresh_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
+        self.out_buf_thresh_image = yarp.ImageRgb()
+        self.out_buf_thresh_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
+        self.out_buf_thresh_image.setExternal(self.out_buf_thresh_array.data, self.out_buf_thresh_array.shape[1],
+                                             self.out_buf_thresh_array.shape[0])
+        print('{:s} opened'.format('/vtd/thresh:o'))
         
         # Output port for bboxes
         self.out_port_human_image = yarp.Port()
@@ -240,29 +249,46 @@ class VisualTargetDetection(yarp.RFModule):
                                 inout = 1 / (1 + np.exp(-inout))
                                 inout = (1 - inout) * 255
                                 norm_map = imresize(raw_hm_sq_255, (height, width)) - inout
-                                print(norm_map.shape)
+                                print("norm_map has the shape ", norm_map.shape, "and the type ", norm_map.dtype)
 
                                 # Heatmap bbox extraction
-                                ret, thresh_hm = cv2.threshold(norm_map, 127, 255, cv2.THRESH_BINARY)
-                                print(thresh_hm.shape)
-                                print(thresh_hm.dtype)
+
+                                ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
+                                print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
+
+                                # Visualizing the Thresholded Heatmap
+                                thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
+                                self.out_buf_thresh_array[:, :] = thresh_hm_array
+                                self.out_port_thresh_image.write(self.out_buf_thresh_image)
+                                
+
 
                                 # Check the number of values returned by cv2.findContours()
-                                contours_info = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                                if len(contours_info) == 2:
-                                    contours, hierarchy = contours_info
-                                else:
-                                    contours = contours_info[0]
+                                _, contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                #if len(contours_info) == 2:
+                                #    contours, hierarchy = contours_info
+                                #else:
+                                 #   contours = contours_info[0]
+                                print("Found", len(contours), "contours")
+                                
 
-                                print(len(contours))
-                                print(contours.dtype)
-                                floatMat = contours.astype(np.float32)
-                                largest_contour = max(floatMat, key=cv2.contourArea)
-                                # Extract (x,y) of left top corner, width, height
-                                x,y,w,h = cv2.boundingRect(largest_contour)
-                                # Draw the bounding box on the original image
-                                hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
-                                hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+                                print("fram_raw as a numpy array has the shape ", np.asarray(frame_raw).shape, "and the type ", np.asarray(frame_raw).dtype)
+                                
+                                hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 255, 0), 2)
+
+                               # Make sure contours not empty
+                                #if len(contours) > 0:
+                                 #   
+                                  #  floatMat = contours.astype(np.float32)
+                                   # print(floatMat.dtype)
+                                    #largest_contour = max(np.asarray(floatMat), key=cv2.contourArea)
+                                    # Extract (x,y) of left top corner, width, height
+                                    #x,y,w,h = cv2.boundingRect(largest_contour)
+                                    # Draw the bounding box on the original image
+                                    #hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
+                                    #hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
+                                #else:
+                                 #   print("No contours found")
 
 
                                 #hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,255,0), 2)
@@ -306,9 +332,9 @@ class VisualTargetDetection(yarp.RFModule):
                                     img_blend_bbox = cv2.addWeighted(rgba_map, 0.2,  np.asarray(img_bbox), 0.8, 0, dtype=cv2.CV_8U)
 
                                     # Connect to the output port
-                                    img_blend_array = np.asarray(img_blend_bbox)
-                                    self.out_buf_human_array[:, :] = img_blend_array
-                                    self.out_port_human_image.write(self.out_buf_human_image)
+                                    #img_blend_array = np.asarray(img_blend_bbox)
+                                    #self.out_buf_human_array[:, :] = img_blend_array
+                                    #self.out_port_human_image.write(self.out_buf_human_image)
 
                 except Exception as err:
                     print("An error occured while extracting the poses from OpenPose data")

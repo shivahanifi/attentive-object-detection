@@ -128,4 +128,4 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
 
     An assertion is a statement in the code that the programmer believes to be true at that point in the program's execution. When an assertion fails, it means that the assumption made by the programmer is incorrect, and the program cannot continue executing. The reason might be that the data type of the input contour is not CV_32F or CV_32S. The function requires the input contour data to be in either single-precision floating-point format (CV_32F) or 32-bit signed integer format (CV_32S).
 
-    Checking the input for the 
+    Converting the input image type to float32 did not solve the problem.

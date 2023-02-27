@@ -23,6 +23,12 @@
 		<node>localhost</node>
 	</module>
 
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /view/thresh --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
 <!-- Connections -->
 
      <!-- RGB image propagated through yarpOpenPose -->
@@ -55,4 +61,10 @@
 		<protocol>mjpeg</protocol>
 	</connection>
 
+    <!-- visualize thresholded heatmap -->
+	<connection>
+		<from>/vtd/thresh:o</from>
+		<to>/view/thresh</to>
+		<protocol>mjpeg</protocol>
+	</connection>
 </application>

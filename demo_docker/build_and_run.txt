@@ -1,0 +1,16 @@
+docker build --build-arg "START_IMG=pytorch/pytorch:1.4-cuda10.1-cudnn7-devel" --build-arg "release=master" --build-arg "sbtag=Unstable" -t mutual_gaze .
+
+xhost +
+
+nvidia-docker run --rm -it --privileged --gpus 1 -e QT_X11_NO_MITSHM=1 -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics --hostname dockerpc --network=host --pid=host mutual_gaze
+
+docker exec -it <id_container> bash
+
+docker build --build-arg "START_IMG=pytorch/pytorch:0.4.1-cuda9-cudnn7-devel" --build-arg "release=master" --build-arg "sbtag=Unstable" -t visual_target_attention .
+
+nvidia-docker run --rm -it --privileged --gpus 1 -e QT_X11_NO_MITSHM=1 -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics --hostname dockerpc --network=host --pid=host visual_target_attention
+
+
+sudo docker build --build-arg "START_IMG=nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04" --build-arg "release=master" --build-arg "sbtag=Unstable" -t visual_target_attention .
+
+sudo nvidia-docker run --rm -it --privileged --gpus all  --privileged -v /dev:/dev -e QT_X11_NO_MITSHM=1 -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --hostname dockerpc --network=host --pid=host visual_target_attention bash

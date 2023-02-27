@@ -253,13 +253,8 @@ class VisualTargetDetection(yarp.RFModule):
 
                                 # Heatmap bbox extraction
                                 #Heatmap binary thresholding
-                                ret, thresh_hm = cv2.threshold(norm_map, 100, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 140, 255, cv2.THRESH_BINARY)
                                 print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
-
-                                # Visualizing the thresholded Heatmap
-                                thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
-                                self.out_buf_thresh_array[:, :] = thresh_hm_array
-                                self.out_port_thresh_image.write(self.out_buf_thresh_image)
 
                                 # Extract the contours of thresholded heatmap
                                 _, contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -267,25 +262,23 @@ class VisualTargetDetection(yarp.RFModule):
                                 
                                 # Drawing the contours
                                 print("fram_raw as a numpy array has the shape ", np.asarray(frame_raw).shape, "and the type ", np.asarray(frame_raw).dtype)
-                                hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 0, 255), 2)
+                                hm_contour = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 0, 255), 2)
+
+                                # Visualizing the thresholded Heatmap and contour
+                                thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
+                                hm_blend_contour = cv2.addWeighted(thresh_hm_array, 0.5,  hm_contour, 0.5, 0, dtype=cv2.CV_8U)
+                                self.out_buf_thresh_array[:, :] = hm_blend_contour
+                                self.out_port_thresh_image.write(self.out_buf_thresh_image)                            
 
                                # Make sure contours not empty
-                                #if len(contours) > 0:
-                                 #   
-                                  #  floatMat = contours.astype(np.float32)
-                                   # print(floatMat.dtype)
-                                    #largest_contour = max(np.asarray(floatMat), key=cv2.contourArea)
+                                if len(contours) > 0:
+                                    largest_contour = max(np.asarray(contours), key=cv2.contourArea)
                                     # Extract (x,y) of left top corner, width, height
-                                    #x,y,w,h = cv2.boundingRect(largest_contour)
+                                    x,y,w,h = cv2.boundingRect(largest_contour)
                                     # Draw the bounding box on the original image
-                                    #hm_bbox = cv2.cvtColor(np.asarray(frame_raw), cv2.COLOR_GRAY2BGR)
-                                    #hm_bbox = cv2.rectangle(hm_bbox, (x,y), (x+w,y+h), (0,0,255), 2)
-                                #else:
-                                 #   print("No contours found")
-
-
-                                #hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,255,0), 2)
-                                print(hm_bbox.shape)
+                                    hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0,255), 2)
+                                else:
+                                    print("No contours found")
 
 
                                 # Visualization

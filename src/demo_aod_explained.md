@@ -142,7 +142,7 @@ hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 255, 0), 2)
 ```
 
 Printing some of the important information resulted in:
-<img src= Img/values.png width=400>
+<img src="Img/values.png" width=700>
 
 In order to visualize the thresholded heatmap, I defined another port called `/vtd/thresh:o` and connected it to another `yarp view` module. The related code:
 ```
@@ -151,10 +151,10 @@ thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
 self.out_buf_thresh_array[:, :] = thresh_hm_array
 self.out_port_thresh_image.write(self.out_buf_thresh_image)
 ```
-The result of visualizing all together:
-<img src="Img/img_hm_thresh.png" width=400>
 
+<img src="Img/img_hm_thresh.png" width=700>
 
+Final Result
 
 
 

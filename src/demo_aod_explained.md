@@ -124,4 +124,8 @@ The goal is to extract the bounding box of the concentrated area in the heatmap.
 5. No error, but no boundin box for the objects
 6. `OpenCV Error: Assertion failed (npoints >= 0 && (depth == CV_32F || depth == CV_32S)) in contourArea`
     
-    Trying to draw just one contour using the maximum contour area ended in this error.
+    Trying to draw just one contour using the maximum contour area ended in this error. It is indicating that there is an assertion failure in the "contourArea" function of the OpenCV library.
+
+    An assertion is a statement in the code that the programmer believes to be true at that point in the program's execution. When an assertion fails, it means that the assumption made by the programmer is incorrect, and the program cannot continue executing. The reason might be that the data type of the input contour is not CV_32F or CV_32S. The function requires the input contour data to be in either single-precision floating-point format (CV_32F) or 32-bit signed integer format (CV_32S).
+
+    Checking the input for the 

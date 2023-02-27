@@ -255,7 +255,9 @@ class VisualTargetDetection(yarp.RFModule):
                                     contours = contours_info[0]
 
                                 print(len(contours))
-                                largest_contour = max(contours, key=cv2.contourArea)
+                                print(contours.dtype)
+                                floatMat = contours.astype(np.float32)
+                                largest_contour = max(floatMat, key=cv2.contourArea)
                                 # Extract (x,y) of left top corner, width, height
                                 x,y,w,h = cv2.boundingRect(largest_contour)
                                 # Draw the bounding box on the original image

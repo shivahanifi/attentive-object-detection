@@ -31,7 +31,7 @@ from functions.utilities_vt import *
 # Initialize YARP
 yarp.Network.init()
 
-class VisualTargetDetection(yarp.RFModule):
+class AttentiveObjectDetection(yarp.RFModule):
     def configure(self, rf):
         
         # GPU
@@ -42,14 +42,14 @@ class VisualTargetDetection(yarp.RFModule):
         
         # Command port
         self.cmd_port = yarp.Port()
-        self.cmd_port.open('/vtd/command:i')
-        print('{:s} opened'.format('/vtd/command:i'))
+        self.cmd_port.open('/aod/command:i')
+        print('{:s} opened'.format('/aod/command:i'))
         self.attach(self.cmd_port)
         
         # Input port and buffer for rgb image
         # Create the port and name it
         self.in_port_human_image = yarp.BufferedPortImageRgb()
-        self.in_port_human_image.open('/vtd/image:i')
+        self.in_port_human_image.open('/aod/image:i')
         # Create numpy array to receive the image 
         self.in_buf_human_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.in_buf_human_image = yarp.ImageRgb()
@@ -57,55 +57,53 @@ class VisualTargetDetection(yarp.RFModule):
         # Wrap YARP image around the array
         self.in_buf_human_image.setExternal(self.in_buf_human_array.data, self.in_buf_human_array.shape[1],
                                             self.in_buf_human_array.shape[0])
-        print('{:s} opened'.format('/vtd/image:i'))
+        print('{:s} opened'.format('/aod/image:i'))
                 
         # Input port for openpose data
         self.in_port_human_data = yarp.BufferedPortBottle()
-        self.in_port_human_data.open('/vtd/data:i')
-        print('{:s} opened'.format('/vtd/data:i'))
+        self.in_port_human_data.open('/aod/data:i')
+        print('{:s} opened'.format('/aod/data:i'))
 
         # Output port for thresholded heatmap
         self.out_port_thresh_image = yarp.Port()
-        self.out_port_thresh_image.open('/vtd/thresh:o')
+        self.out_port_thresh_image.open('/aod/thresh:o')
         self.out_buf_thresh_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_thresh_image = yarp.ImageRgb()
         self.out_buf_thresh_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_thresh_image.setExternal(self.out_buf_thresh_array.data, self.out_buf_thresh_array.shape[1],
                                              self.out_buf_thresh_array.shape[0])
-        print('{:s} opened'.format('/vtd/thresh:o'))
+        print('{:s} opened'.format('/aod/thresh:o'))
         
         # Output port for bboxes
         self.out_port_human_image = yarp.Port()
-        self.out_port_human_image.open('/vtd/image:o')
+        self.out_port_human_image.open('/aod/image:o')
         self.out_buf_human_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_human_image = yarp.ImageRgb()
         self.out_buf_human_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_human_image.setExternal(self.out_buf_human_array.data, self.out_buf_human_array.shape[1],
                                              self.out_buf_human_array.shape[0])
-        print('{:s} opened'.format('/vtd/image:o'))
+        print('{:s} opened'.format('/aod/image:o'))
 
         # Propag input image
         self.out_port_propag_image = yarp.Port()
-        self.out_port_propag_image.open('/vtd/propag:o')
+        self.out_port_propag_image.open('/aod/propag:o')
         self.out_buf_propag_image_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_propag_image = yarp.ImageRgb()
         self.out_buf_propag_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_propag_image.setExternal(self.out_buf_propag_image_array.data, self.out_buf_propag_image_array.shape[1],
                                              self.out_buf_propag_image_array.shape[0])
-        print('{:s} opened'.format('/vtd/propag:o'))
+        print('{:s} opened'.format('/aod/propag:o'))
 
         # Output port for the selection
         self.out_port_prediction = yarp.Port()
-        self.out_port_prediction.open('/vtd/pred:o')
-        print('{:s} opened'.format('/vtd/pred:o'))
+        self.out_port_prediction.open('/aod/pred:o')
+        print('{:s} opened'.format('/aod/pred:o'))
         
         self.human_image = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
 
         # To get argumennts needed
         parser = argparse.ArgumentParser()
         parser.add_argument('--model_weights', type=str, help='model weights', default='/projects/online-visual-target-detection/model_demo.pt')
-        #parser.add_argument('--image_dir', type=str, help='images', default=FRAMES_DIR)
-        #parser.add_argument('--head_dir', type=str, help='head bounding boxes', default=JSON_FILES)
         parser.add_argument('--vis_mode', type=str, help='heatmap or arrow', default='heatmap')
         parser.add_argument('--out_threshold', type=int, help='out-of-frame target dicision threshold', default=100)
         self.args = parser.parse_args()
@@ -170,11 +168,7 @@ class VisualTargetDetection(yarp.RFModule):
         assert self.in_buf_human_array.__array_interface__['data'][0] == self.in_buf_human_image.getRawImage().__int__()
 
         # Convert the numpy array to a PIL image
-        pil_image = Image.fromarray(self.in_buf_human_array)
-        
-       
-        # To check the input
-        #pil_image.save('/projects/test_images/pil_image.png')
+        pil_image = Image.fromarray(self.in_buf_human_array)       
 
         if pil_image:
             received_data = self.in_port_human_data.read()
@@ -252,25 +246,25 @@ class VisualTargetDetection(yarp.RFModule):
                                 print("norm_map has the shape ", norm_map.shape, "and the type ", norm_map.dtype)
 
                                 # Heatmap bbox extraction
-                                #Heatmap binary thresholding
+                                # Heatmap binary thresholding
                                 ret, thresh_hm = cv2.threshold(norm_map, 140, 255, cv2.THRESH_BINARY)
                                 print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
 
-                                # Extract the contours of thresholded heatmap
+                                # Thresholded heatmap contour extraction
                                 _, contours, _ = cv2.findContours(thresh_hm.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                                 print("Found", len(contours), "contours")                                
                                 
-                                # Drawing the contours
+                                # Contour drawing
                                 print("fram_raw as a numpy array has the shape ", np.asarray(frame_raw).shape, "and the type ", np.asarray(frame_raw).dtype)
                                 hm_contour = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 0, 255), 2)
 
-                                # Visualizing the thresholded Heatmap and contour
+                                # Thresholded Heatmap and contour visualization
                                 thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
                                 hm_blend_contour = cv2.addWeighted(thresh_hm_array, 0.5,  hm_contour, 0.5, 0, dtype=cv2.CV_8U)
                                 self.out_buf_thresh_array[:, :] = hm_blend_contour
                                 self.out_port_thresh_image.write(self.out_buf_thresh_image)                            
 
-                               # Make sure contours not empty
+                               # Non-empty contours
                                 if len(contours) > 0:
                                     largest_contour = max(np.asarray(contours), key=cv2.contourArea)
                                     # Extract (x,y) of left top corner, width, height
@@ -282,7 +276,7 @@ class VisualTargetDetection(yarp.RFModule):
 
 
                                 # Visualization
-                                # Draw the raw_frame and the bbox
+                                # Raw_frame and the bbox
                                 start_point = (int(head_box[0]), int(head_box[1]))
                                 end_point = (int(head_box[2]), int(head_box[3]))
                                 img_bbox = cv2.rectangle(hm_bbox,start_point,end_point, (0, 255, 0),2)
@@ -323,18 +317,17 @@ class VisualTargetDetection(yarp.RFModule):
                                     self.out_port_human_image.write(self.out_buf_human_image)
 
                 except Exception as err:
-                    print("An error occured while extracting the poses from OpenPose data")
                     print("Unexpected error!!! " + str(err))
         return True                  
 
 if __name__ == '__main__':
     rf = yarp.ResourceFinder()
     rf.setVerbose(True)
-    rf.setDefaultContext("VisualTargetDetection")
+    rf.setDefaultContext("AttentiveObjectDetection")
     rf.setDefaultConfigFile('../app/config/.ini')
     rf.configure(sys.argv)
 
     # Run module
-    manager = VisualTargetDetection()
+    manager = AttentiveObjectDetection()
     manager.runModule(rf)
     

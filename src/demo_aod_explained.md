@@ -5,6 +5,7 @@ This is to clearly explain the modifications of the [online-vtd](https://github.
 - [Goal](#goal)
 - [Approach](#approach)
 - [Errors](#errors)
+- [Visualization](#visualization)
 
                                    
 ## Recap
@@ -144,18 +145,30 @@ hm_bbox = cv2.drawContours(np.asarray(frame_raw), contours, -1, (0, 255, 0), 2)
 Printing some of the important information resulted in:
 <img src="Img/values.png" width=700>
 
-In order to visualize the thresholded heatmap, I defined another port called `/vtd/thresh:o` and connected it to another `yarp view` module. The related code:
-```
-# Visualizing the thresholded Heatmap
-thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
-self.out_buf_thresh_array[:, :] = thresh_hm_array
-self.out_port_thresh_image.write(self.out_buf_thresh_image)
-```
 
-<img src="Img/img_hm_thresh.png" width=700>
+## Visualization
 
-Final Result
+- Contour
+
+  In order to visualize the thresholded heatmap, I defined another port called `/aod/thresh:o` and connected it to another `yarp view` module. The related code:
+  ```
+  # Visualizing the thresholded Heatmap
+  thresh_hm_array = np.asarray(cv2.cvtColor(thresh_hm, cv2.COLOR_GRAY2BGR))
+  self.out_buf_thresh_array[:, :] = thresh_hm_array
+  self.out_port_thresh_image.write(self.out_buf_thresh_image)
+  ```
+
+  <img src="Img/img_hm_thresh.png" width=700>
+
+- Bounding box  
+
+  since the final goal is to extract the bounding box of the objects that are attented visually, the `cv2.boundingRect` method is used to draw the bounding box arround the maximum contour area. The bounding box visualization is added to the main output along with the head bounding box and attention heatmap. In addition, a combination of the raw frame and thresholded heatmap plus the co ntour drawing is being visualized on the `/view/thresh`. 
+
+  <img src="Img/bbox_bbox_hm.png">
+
+  NOTE: To have a better fitting bounding box the thresholding values has been changed from 100 t0 140. The bigger the value, the smaller the area thresholded and the smaller bounding box will be created.
 
 
 
-  
+
+  s

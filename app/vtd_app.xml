@@ -1,6 +1,6 @@
 
 <application>
-<name>visual target detection online</name>
+<name>Attentive object detection</name>
 <version>1.0</version>
 
 <!-- Modules -->
@@ -42,28 +42,28 @@
     <!-- raw image to input -->
 	<connection>
 		<from>/yarpOpenPose/propag:o</from>
-		<to>/vtd/image:i</to>
+		<to>/aod/image:i</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
 	<!-- yarpopenpose data to input -->
     <connection>
 		<from>/yarpOpenPose/target:o</from>
-		<to>/vtd/data:i</to>
+		<to>/aod/data:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
     <!-- visualize bbox -->
 	<connection>
-		<from>/vtd/image:o</from>
+		<from>/aod/image:o</from>
 		<to>/view/bbox</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
     <!-- visualize thresholded heatmap -->
 	<connection>
-		<from>/vtd/thresh:o</from>
+		<from>/aod/thresh:o</from>
 		<to>/view/thresh</to>
 		<protocol>mjpeg</protocol>
 	</connection>

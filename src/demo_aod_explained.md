@@ -162,13 +162,8 @@ Printing some of the important information resulted in:
 
 - Bounding box  
 
-  since the final goal is to extract the bounding box of the objects that are attented visually, the `cv2.boundingRect` method is used to draw the bounding box arround the maximum contour area. The bounding box visualization is added to the main output along with the head bounding box and attention heatmap. In addition, a combination of the raw frame and thresholded heatmap plus the co ntour drawing is being visualized on the `/view/thresh`. 
+  Since the final goal is to extract the bounding box of the objects that are attented visually, the `cv2.boundingRect` method is used to draw the bounding box arround the maximum contour area. The bounding box visualization is added to the main output along with the head bounding box and attention heatmap. In addition, a combination of the raw frame and thresholded heatmap plus the co ntour drawing is being visualized on the `/view/thresh`. 
 
   <img src="Img/bbox_bbox_hm.png">
 
   NOTE: To have a better fitting bounding box the thresholding values has been changed from 100 t0 140. The bigger the value, the smaller the area thresholded and the smaller bounding box will be created.
-
-
-
-
-  s

@@ -6,6 +6,7 @@ This is to clearly explain the modifications of the [online-vtd](https://github.
 - [Approach](#approach)
 - [Errors](#errors)
 - [Visualization](#visualization)
+- [Bounding box information](#bounding-box-information)
 
                                    
 ## Recap
@@ -167,3 +168,15 @@ Printing some of the important information resulted in:
   <img src="Img/bbox_bbox_hm.png">
 
   NOTE: To have a better fitting bounding box the thresholding values has been changed from 100 t0 140. The bigger the value, the smaller the area thresholded and the smaller bounding box will be created.
+
+## Bounding box information
+
+We need the information related to the bounding box of the heatmap to compare it with the output of the object detection module. The output of the object detection module will have the form:
+
+<img srec="Img/ObjectDetection.png" width=400>
+
+However, the `cv2.rectangle` is using x,y,w,h in the form:
+
+<img src="Img/cv2.rectangle.png" width=400>
+
+To make the comparison easier we will try to put the data on the output port in the same order. Therefore, we need the (x, y+h) and (x+w, y). An output port `/aod/hm_bbox:o` is created and a bottle containing the information of the heatmap bounding box is written on it.

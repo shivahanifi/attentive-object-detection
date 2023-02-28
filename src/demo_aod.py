@@ -74,6 +74,11 @@ class AttentiveObjectDetection(yarp.RFModule):
                                              self.out_buf_thresh_array.shape[0])
         print('{:s} opened'.format('/aod/thresh:o'))
         
+        # Output port for heatmap bbox
+        self.out_port_hm_bbox = yarp.Port()
+        self.out_port_hm_bbox.open('/aod/hm_bbox:o')
+        print('{:s} opened'.format('/aod/hm_bbox:o'))
+
         # Output port for bboxes
         self.out_port_human_image = yarp.Port()
         self.out_port_human_image.open('/aod/image:o')
@@ -273,6 +278,20 @@ class AttentiveObjectDetection(yarp.RFModule):
                                     hm_bbox = cv2.rectangle(np.asarray(frame_raw), (x,y), (x+w,y+h), (0,0,255), 2)
                                 else:
                                     print("No contours found")
+
+                                # Heatmap bbox output
+                                Xtl = x
+                                Ytl = y + h
+                                Xbr = x + w
+                                Ybr = y
+                                TopLeft_BottomRight = [Xtl, Ytl, Xbr, Ybr]
+                                print("TopLeft_BottomRight: ", TopLeft_BottomRight )
+                                hm_bbox_info = yarp.Bottle()
+                                hm_bbox_info.addInt32(Xtl)
+                                hm_bbox_info.addInt32(Ytl)
+                                hm_bbox_info.addInt32(Xbr)
+                                hm_bbox_info.addInt32(Ybr)
+                                self.out_port_hm_bbox.write(hm_bbox_info)
 
 
                                 # Visualization

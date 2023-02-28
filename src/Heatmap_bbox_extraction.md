@@ -173,10 +173,10 @@ Printing some of the important information resulted in:
 
 We need the information related to the bounding box of the heatmap to compare it with the output of the object detection module. The output of the object detection module will have the form:
 
-<img srec="Img/ObjectDetection.png" width=400>
+<img src="Img/ObjectDetection.png" width=100>
 
 However, the `cv2.rectangle` is using x,y,w,h in the form:
 
-<img src="Img/cv2.rectangle.png" width=400>
+<img src="Img/cv2.rectangle.png" width=100>
 
 To make the comparison easier we will try to put the data on the output port in the same order. Therefore, we need the (x, y+h) and (x+w, y). An output port `/aod/hm_bbox:o` is created and a bottle containing the information of the heatmap bounding box is written on it.

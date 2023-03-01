@@ -169,9 +169,10 @@ class AttentiveObjectDetection(yarp.RFModule):
     def updateModule(self):
     
         received_image = self.in_port_human_image.read()
-        self.in_buf_human_image.copy(received_image)
-        self.out_buf_propag_image.copy(received_image)
-        assert self.in_buf_human_array.__array_interface__['data'][0] == self.in_buf_human_image.getRawImage().__int__()
+        if received_image is not None:
+            self.in_buf_human_image.copy(received_image)
+            self.out_buf_propag_image.copy(received_image)
+            assert self.in_buf_human_array.__array_interface__['data'][0] == self.in_buf_human_image.getRawImage().__int__()
 
         # Convert the numpy array to a PIL image
         pil_image = Image.fromarray(self.in_buf_human_array)       
@@ -253,7 +254,7 @@ class AttentiveObjectDetection(yarp.RFModule):
 
                                 # Heatmap bbox extraction
                                 # Heatmap binary thresholding
-                                ret, thresh_hm = cv2.threshold(norm_map, 210, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 200, 255, cv2.THRESH_BINARY)
                                 print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
 
                                 # Thresholded heatmap contour extraction

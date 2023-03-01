@@ -29,6 +29,12 @@
 		<node>localhost</node>
 	</module>
 
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /view/vtd_propag --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
 <!-- Connections -->
 
      <!-- RGB image propagated through yarpOpenPose -->
@@ -67,4 +73,12 @@
 		<to>/view/thresh</to>
 		<protocol>mjpeg</protocol>
 	</connection>
+
+    <!-- RGB propagated through vtd_bbox -->
+	<connection>
+		<from>/aod/propag:o</from>
+		<to>/view/vtd_propag</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
 </application>

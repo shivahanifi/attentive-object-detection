@@ -171,12 +171,17 @@ Printing some of the important information resulted in:
 
 ## Bounding box information
 
-We need the information related to the bounding box of the heatmap to compare it with the output of the object detection module. The output of the object detection module will have the form:
+We need the information related to the bounding box of the heatmap to compare it with the output of the object detection module. The output of both the object detection module and the `cv2.rectangle` will have the form:
 
 <img src="Img/ObjectDetection.png" width=100>
 
-However, the `cv2.rectangle` is using x,y,w,h in the form:
+To make the comparison easier we will try to put the data on the output port in the same order. An output port `/aod/hm_bbox:o` is created and a bottle containing the information of the heatmap bounding box is written on it. Reading this port with:
+```
+yarp read ... /aod/hm_bbox:o 
+```
+resulted in:
+<img src="Img/aod_hm_bbox.png">
 
-<img src="Img/cv2.rectangle.png" width=100>
+## Propagation
 
-To make the comparison easier we will try to put the data on the output port in the same order. Therefore, we need the (x, y+h) and (x+w, y). An output port `/aod/hm_bbox:o` is created and a bottle containing the information of the heatmap bounding box is written on it.
+The input image to the module is propagated the way it is to be used in the final module.

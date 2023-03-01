@@ -170,6 +170,7 @@ class AttentiveObjectDetection(yarp.RFModule):
     
         received_image = self.in_port_human_image.read()
         self.in_buf_human_image.copy(received_image)
+        self.out_buf_propag_image.copy(received_image)
         assert self.in_buf_human_array.__array_interface__['data'][0] == self.in_buf_human_image.getRawImage().__int__()
 
         # Convert the numpy array to a PIL image
@@ -252,7 +253,7 @@ class AttentiveObjectDetection(yarp.RFModule):
 
                                 # Heatmap bbox extraction
                                 # Heatmap binary thresholding
-                                ret, thresh_hm = cv2.threshold(norm_map, 140, 255, cv2.THRESH_BINARY)
+                                ret, thresh_hm = cv2.threshold(norm_map, 210, 255, cv2.THRESH_BINARY)
                                 print("thresh_hm has the shape ", thresh_hm.shape, "and the type ", thresh_hm.dtype)
 
                                 # Thresholded heatmap contour extraction
@@ -280,17 +281,11 @@ class AttentiveObjectDetection(yarp.RFModule):
                                     print("No contours found")
 
                                 # Heatmap bbox output
-                                Xtl = x
-                                Ytl = y + h
-                                Xbr = x + w
-                                Ybr = y
-                                TopLeft_BottomRight = [Xtl, Ytl, Xbr, Ybr]
-                                print("TopLeft_BottomRight: ", TopLeft_BottomRight )
                                 hm_bbox_info = yarp.Bottle()
-                                hm_bbox_info.addInt32(Xtl)
-                                hm_bbox_info.addInt32(Ytl)
-                                hm_bbox_info.addInt32(Xbr)
-                                hm_bbox_info.addInt32(Ybr)
+                                hm_bbox_info.addInt32(x)
+                                hm_bbox_info.addInt32(y)
+                                hm_bbox_info.addInt32(x+w)
+                                hm_bbox_info.addInt32(y+h)
                                 self.out_port_hm_bbox.write(hm_bbox_info)
 
 
@@ -334,6 +329,7 @@ class AttentiveObjectDetection(yarp.RFModule):
                                     img_blend_array = np.asarray(img_blend_bbox)
                                     self.out_buf_human_array[:, :] = img_blend_array
                                     self.out_port_human_image.write(self.out_buf_human_image)
+                                    self.out_port_propag_image.write(self.out_buf_propag_image)
 
                 except Exception as err:
                     print("Unexpected error!!! " + str(err))

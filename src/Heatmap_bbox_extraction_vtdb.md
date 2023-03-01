@@ -180,8 +180,9 @@ To make the comparison easier we will try to put the data on the output port in 
 yarp read ... /aod/hm_bbox:o 
 ```
 resulted in:
-<img src="Img/aod_hm_bbox.png">
+
+<img src="Img/aod_hm_bbox.png" width=500>
 
 ## Propagation
 
-The input image to the module is propagated the way it is to be used in the final module.
+The input image to the module is also propagated the way it is to be used in the final module.

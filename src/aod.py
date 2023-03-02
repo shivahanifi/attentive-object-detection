@@ -1,31 +1,15 @@
 import yarp
 import cv2
-import json
 import math
-import glob
-import yarp
 import PIL
 import sys
 import io
-import logging
-import torch
-import argparse, os
-import torchvision
-import torch.nn as nn
-import pandas as pd
+import os
 import numpy as np
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from torchvision import datasets, transforms
-from PIL import Image
-from PIL import ImageShow
-from scipy.misc import imresize
-from model import ModelSpatial
-from utils import imutils, evaluation
-from config import *
-from functions.config_vt import *
-from functions.utilities_vt import *
+from config_vt import *
+
 
 
 # Initialize YARP
@@ -168,28 +152,37 @@ class AttentiveObjectDetection(yarp.RFModule):
         hm_bbox_data = self.in_port_hm_bbox_data.read()
 
         # Recieve object detection data
+        obj_det_data = yarp.Bottle()
+        obj_det_data.clear()
         obj_det_data = self.in_port_objdet_data.read()
-        obj_det_data_list = [tuple(s.strip().split()) for s in obj_det_data.split(") ") if s.strip()]
+        predictions= []
+        if obj_det_data is not None:  
+            for i in range(0, obj_det_data.size()):  
+                dets = obj_det_data.get(i).asList() 
+                if dets.get(0).isDouble():  
+                    bbox = [dets.get(0).asDouble(), dets.get(1).asDouble(), dets.get(2).asDouble(),  
+                            dets.get(3).asDouble()] # bbox format: [tl_x, tl_y, br_x, br_y]
+                    cls = dets.get(5).asString() # label of i-th detection
 
-        # Selection
-        bboxes = []
+                    detection_dict = { 
+                        'bbox': bbox,  
+                        'class': cls  } 
+                    predictions.append(detection_dict)
+
+        # Selection & Visualization       
         max_iou = 0
-        for det in obj_det_data_list:
-            obj_det_bbox =[float(coord) for coord in det[0:4]]
-            bboxes.append(obj_det_bbox)
+        wallpaper = frame_raw
+        for pred in predictions:
+            obj_det_bbox = detection_dict.get("bbox")
+            bbox_draw = cv2.rectangle(wallpaper, obj_det_bbox[0:2], obj_det_bbox[2:4], (0, 0, 255), 3)
+            wallpaper = bbox_draw            
             iou_value = self.iou(hm_bbox_data, obj_det_bbox)
             if iou_value > max_iou:
-                selected_obj_label = det[5]
+                selected_obj_label = detection_dict.get("class")
                 selected_obj_bbox = obj_det_bbox
+                max_iou = iou_value
         
         print("The visually attended object is", selected_obj_label)
-
-        # Visualization
-        wallpaper = frame_raw
-        for box in bboxes:
-            bbox_draw = cv2.rectangle(wallpaper, box[0:2], box[2:4], (0, 0, 255), 3)
-            wallpaper = bbox_draw
-        
         selected_obj = cv2.rectangle(wallpaper, selected_obj_bbox[0:2], selected_obj_bbox[2:4], (0, 255, 0), 5)
 
         # Output

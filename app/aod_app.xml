@@ -28,44 +28,36 @@
      <!-- RGB image propagated through vtd_bbox -->
      <!-- visualize raw image -->
 	<connection>
-		<from>/aod/propag:o</from>
+		<from>/vtd_bbox/propag:o</from>
 		<to>/view/rgb</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
     <!-- raw image to input -->
 	<connection>
-		<from>/aod/propag:o</from>
+		<from>/vtd_bbox/propag:o</from>
 		<to>/aod/image:i</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
 	<!-- heatmap bbox data to input -->
     <connection>
-		<from>/yarpOpenPose/target:o</from>
-		<to>/aod/data:i</to>
+		<from>/vtd_bbox/hm_bbox:o</from>
+		<to>/aod/hmbbox:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 
+	<!-- object detection data to input -->
+    <connection>
+		<from>/detection/dets:o</from>
+		<to>/aod/objdet:i</to>
+		<protocol>tcp</protocol>
+	</connection>
 
     <!-- visualize bbox -->
 	<connection>
-		<from>/aod/image:o</from>
+		<from>/aod/detect:o</from>
 		<to>/view/bbox</to>
-		<protocol>mjpeg</protocol>
-	</connection>
-
-    <!-- visualize thresholded heatmap -->
-	<connection>
-		<from>/aod/thresh:o</from>
-		<to>/view/thresh</to>
-		<protocol>mjpeg</protocol>
-	</connection>
-
-    <!-- RGB propagated through vtd_bbox -->
-	<connection>
-		<from>/aod/propag:o</from>
-		<to>/view/vtd_propag</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 

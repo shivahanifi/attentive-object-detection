@@ -16,13 +16,7 @@ from config_vt import *
 yarp.Network.init()
 
 class AttentiveObjectDetection(yarp.RFModule):
-    def configure(self, rf):
-        
-        # GPU
-        num_gpu = rf.find("num_gpu").asInt32()
-        num_gpu_start = rf.find("num_gpu_start").asInt32()
-        print('Num GPU: %d, GPU start: %d' % (num_gpu, num_gpu_start))
-        init_gpus(num_gpu, num_gpu_start)    
+    def configure(self, rf):  
         
         # Command port
         self.cmd_port = yarp.Port()
@@ -59,8 +53,8 @@ class AttentiveObjectDetection(yarp.RFModule):
         self.out_buf_detection_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_detection_image = yarp.ImageRgb()
         self.out_buf_detection_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
-        self.out_buf_detection_image.setExternal(self.out_buf_thresh_array.data, self.out_buf_thresh_array.shape[1],
-                                             self.out_buf_thresh_array.shape[0])
+        self.out_buf_detection_image.setExternal(self.out_buf_detection_array.data, self.out_buf_detection_array.shape[1],
+                                             self.out_buf_detection_array.shape[0])
         print('{:s} opened'.format('/aod/detect:o'))
 
         # Propag input image
@@ -143,9 +137,10 @@ class AttentiveObjectDetection(yarp.RFModule):
 
         # Recieve the inpu image
         frame_raw = self.in_port_scene_image.read()
-        self.in_port_scene_image.copy(frame_raw)
-        self.out_buf_propag_image.copy(frame_raw)
-        assert self.in_buf_scene_array.__array_interface__['data'][0] == self.in_buf_scene_image.getRawImage().__int__()   
+        if frame_raw is not None:
+            self.in_buf_scene_image.copy(frame_raw)
+            self.out_buf_propag_image.copy(frame_raw)
+            assert self.in_buf_scene_array.__array_interface__['data'][0] == self.in_buf_scene_image.getRawImage().__int__()   
 
 
         # Recieve heatmap bbox data

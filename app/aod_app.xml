@@ -13,13 +13,13 @@
 
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /view/rgb --w 640 --h 480</parameters>
+		<parameters>--name /view/rgb_propag --w 640 --h 480</parameters>
 		<node>localhost</node>
 	</module>
 
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /view/bbox --w 640 --h 480</parameters>
+		<parameters>--name /view/bbox_final --w 640 --h 480</parameters>
 		<node>localhost</node>
 	</module>
 
@@ -29,7 +29,7 @@
      <!-- visualize raw image -->
 	<connection>
 		<from>/vtd_bbox/propag:o</from>
-		<to>/view/rgb</to>
+		<to>/view/rgb_propag</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
@@ -57,7 +57,7 @@
     <!-- visualize bbox -->
 	<connection>
 		<from>/aod/detect:o</from>
-		<to>/view/bbox</to>
+		<to>/view/bbox_final</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 

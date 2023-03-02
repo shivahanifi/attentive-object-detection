@@ -23,60 +23,48 @@
 		<node>localhost</node>
 	</module>
 
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /view/thresh --w 640 --h 480</parameters>
-		<node>localhost</node>
-	</module>
-
-	<module>
-		<name>yarpview</name>
-		<parameters>--name /view/vtd_propag --w 640 --h 480</parameters>
-		<node>localhost</node>
-	</module>
-
 <!-- Connections -->
 
-     <!-- RGB image propagated through yarpOpenPose -->
+     <!-- RGB image propagated through vtd_bbox -->
      <!-- visualize raw image -->
 	<connection>
-		<from>/yarpOpenPose/propag:o</from>
+		<from>/aod/propag:o</from>
 		<to>/view/rgb</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
     <!-- raw image to input -->
 	<connection>
-		<from>/yarpOpenPose/propag:o</from>
-		<to>/vtd_bbox/image:i</to>
+		<from>/aod/propag:o</from>
+		<to>/aod/image:i</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
-	<!-- yarpopenpose data to input -->
+	<!-- heatmap bbox data to input -->
     <connection>
 		<from>/yarpOpenPose/target:o</from>
-		<to>/vtd_bbox/data:i</to>
+		<to>/aod/data:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 
 
     <!-- visualize bbox -->
 	<connection>
-		<from>/vtd_bbox/image:o</from>
+		<from>/aod/image:o</from>
 		<to>/view/bbox</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
     <!-- visualize thresholded heatmap -->
 	<connection>
-		<from>/vtd_bbox/thresh:o</from>
+		<from>/aod/thresh:o</from>
 		<to>/view/thresh</to>
 		<protocol>mjpeg</protocol>
 	</connection>
 
     <!-- RGB propagated through vtd_bbox -->
 	<connection>
-		<from>/vtd_bbox/propag:o</from>
+		<from>/aod/propag:o</from>
 		<to>/view/vtd_propag</to>
 		<protocol>mjpeg</protocol>
 	</connection>

@@ -42,14 +42,14 @@ class AttentiveObjectDetection(yarp.RFModule):
         
         # Command port
         self.cmd_port = yarp.Port()
-        self.cmd_port.open('/aod/command:i')
-        print('{:s} opened'.format('/aod/command:i'))
+        self.cmd_port.open('/vtd_bbox/command:i')
+        print('{:s} opened'.format('/vtd_bbox/command:i'))
         self.attach(self.cmd_port)
         
         # Input port and buffer for rgb image
         # Create the port and name it
         self.in_port_human_image = yarp.BufferedPortImageRgb()
-        self.in_port_human_image.open('/aod/image:i')
+        self.in_port_human_image.open('/vtd_bbox/image:i')
         # Create numpy array to receive the image 
         self.in_buf_human_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.in_buf_human_image = yarp.ImageRgb()
@@ -57,52 +57,52 @@ class AttentiveObjectDetection(yarp.RFModule):
         # Wrap YARP image around the array
         self.in_buf_human_image.setExternal(self.in_buf_human_array.data, self.in_buf_human_array.shape[1],
                                             self.in_buf_human_array.shape[0])
-        print('{:s} opened'.format('/aod/image:i'))
+        print('{:s} opened'.format('/vtd_bbox/image:i'))
                 
         # Input port for openpose data
         self.in_port_human_data = yarp.BufferedPortBottle()
-        self.in_port_human_data.open('/aod/data:i')
-        print('{:s} opened'.format('/aod/data:i'))
+        self.in_port_human_data.open('/vtd_bbox/data:i')
+        print('{:s} opened'.format('/vtd_bbox/data:i'))
 
         # Output port for thresholded heatmap
         self.out_port_thresh_image = yarp.Port()
-        self.out_port_thresh_image.open('/aod/thresh:o')
+        self.out_port_thresh_image.open('/vtd_bbox/thresh:o')
         self.out_buf_thresh_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_thresh_image = yarp.ImageRgb()
         self.out_buf_thresh_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_thresh_image.setExternal(self.out_buf_thresh_array.data, self.out_buf_thresh_array.shape[1],
                                              self.out_buf_thresh_array.shape[0])
-        print('{:s} opened'.format('/aod/thresh:o'))
+        print('{:s} opened'.format('/vtd_bbox/thresh:o'))
         
         # Output port for heatmap bbox
         self.out_port_hm_bbox = yarp.Port()
-        self.out_port_hm_bbox.open('/aod/hm_bbox:o')
-        print('{:s} opened'.format('/aod/hm_bbox:o'))
+        self.out_port_hm_bbox.open('/vtd_bbox/hm_bbox:o')
+        print('{:s} opened'.format('/vtd_bbox/hm_bbox:o'))
 
         # Output port for bboxes
         self.out_port_human_image = yarp.Port()
-        self.out_port_human_image.open('/aod/image:o')
+        self.out_port_human_image.open('/vtd_bbox/image:o')
         self.out_buf_human_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_human_image = yarp.ImageRgb()
         self.out_buf_human_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_human_image.setExternal(self.out_buf_human_array.data, self.out_buf_human_array.shape[1],
                                              self.out_buf_human_array.shape[0])
-        print('{:s} opened'.format('/aod/image:o'))
+        print('{:s} opened'.format('/vtd_bbox/image:o'))
 
         # Propag input image
         self.out_port_propag_image = yarp.Port()
-        self.out_port_propag_image.open('/aod/propag:o')
+        self.out_port_propag_image.open('/vtd_bbox/propag:o')
         self.out_buf_propag_image_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
         self.out_buf_propag_image = yarp.ImageRgb()
         self.out_buf_propag_image.resize(IMAGE_WIDTH, IMAGE_HEIGHT)
         self.out_buf_propag_image.setExternal(self.out_buf_propag_image_array.data, self.out_buf_propag_image_array.shape[1],
                                              self.out_buf_propag_image_array.shape[0])
-        print('{:s} opened'.format('/aod/propag:o'))
+        print('{:s} opened'.format('/vtd_bbox/propag:o'))
 
         # Output port for the selection
         self.out_port_prediction = yarp.Port()
-        self.out_port_prediction.open('/aod/pred:o')
-        print('{:s} opened'.format('/aod/pred:o'))
+        self.out_port_prediction.open('/vtd_bbox/pred:o')
+        print('{:s} opened'.format('/vtd_bbox/pred:o'))
         
         self.human_image = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
 

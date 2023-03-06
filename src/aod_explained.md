@@ -124,3 +124,10 @@ There are some exceptions that may affect the result.
     self.out_buf_detection_array[:, :] = selected_obj
     self.out_port_detection_image.write( self.out_buf_detection_image)
     ```
+    The result recieved at this step are:
+    - W/O printing the labels
+    <img src="Img/selection_nolabel.png" width=500>
+    - W/ labels
+    <img src="Img/selection_labels.png" width=500>
+
+    Also find the related video at the [result_video]() folder.

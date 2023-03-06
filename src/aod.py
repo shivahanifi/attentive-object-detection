@@ -79,6 +79,7 @@ class AttentiveObjectDetection(yarp.RFModule):
             reply.addString('Quit command sent')
         return True
     
+    # Clean the ports
     def cleanup(self):
         print('Cleanup function')
         self.in_port_scene_image.close()
@@ -133,6 +134,13 @@ class AttentiveObjectDetection(yarp.RFModule):
 
         # return the intersection over union value
         return iou
+    # Distance
+    def dist(self, p, q):
+        if len(p) != len(q):
+            raise ValueError("Points must have the same number of dimensions")
+        return math.sqrt(sum((p[i] - q[i]) ** 2 for i in range(len(p))))
+
+            #(sum(p[0]+ q[0]) * (p[0]+ q[0]) + (p[1]+ q[1]) * (p[0]+ q[0]) )
 
     def updateModule(self):
 
@@ -153,7 +161,7 @@ class AttentiveObjectDetection(yarp.RFModule):
         hm_bbox_data_list = []
         for i in range(hm_bbox_data.size()):
              hm_bbox_data_list.append(hm_bbox_data.get(i).asFloat32())
-        print("hm_bbox_data_list is: ", hm_bbox_data_list)
+        #print("hm_bbox_data_list is: ", hm_bbox_data_list)
 
 
         # Recieve object detection data
@@ -173,30 +181,57 @@ class AttentiveObjectDetection(yarp.RFModule):
                         'bbox': bbox,  
                         'class': cls  } 
                     predictions.append(detection_dict)
+        else:
+            print("Np information recieved from object detection module")
 
         # Selection & Visualization       
         max_iou = 0
         selected_obj_label = None
         wallpaper = np.asarray(frame_raw)
         for pred in predictions:
+            obj_label = pred.get("class")
             obj_det_bbox = pred.get("bbox")
-            print("obj_det_bbox is:", obj_det_bbox)
-            obj_det_bbox_array = np.array(obj_det_bbox, dtype=np.float64)
-            obj_det_bbox_float32 = obj_det_bbox_array.astype(np.float32).tolist()
-            bbox_draw = cv2.rectangle(wallpaper, (int(obj_det_bbox[0]), int(obj_det_bbox[1])), (int(obj_det_bbox[2]), int(obj_det_bbox[3])), (0, 0, 255), 3)
+            #print("obj_det_bbox is:", obj_det_bbox)
+            obj_det_bbox_float32 = np.array(obj_det_bbox, dtype=np.float32).tolist()
+            # Top-left ,bottom-right info
+            top_left = (int(obj_det_bbox[0]), int(obj_det_bbox[1]))
+            bottom_right = (int(obj_det_bbox[2]), int(obj_det_bbox[3]))
+            label_draw = cv2.putText(wallpaper, obj_label, (top_left[0], top_left[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1, 2)
+            bbox_draw = cv2.rectangle(label_draw, top_left, bottom_right, (0, 0, 255), 3)
             wallpaper = bbox_draw 
-            print("inputs of iou: ", hm_bbox_data_list,obj_det_bbox_float32)         
+            #print("inputs of iou: ", hm_bbox_data_list,obj_det_bbox_float32)         
             iou_value = self.iou(hm_bbox_data_list,obj_det_bbox_float32)
             if iou_value > max_iou:
-                selected_obj_label = pred.get("class")
+                selected_obj_label = obj_label               
                 selected_obj_bbox = obj_det_bbox
                 max_iou = iou_value
         if selected_obj_label is not None:
-            print("The visually attended object is", selected_obj_label)
-            selected_obj = cv2.rectangle(wallpaper, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), int(selected_obj_bbox[3])), (0, 255, 0), 5)
+            print("The visually attended object selected by IoU is", selected_obj_label)
+            selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2, 2)
+            selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), int(selected_obj_bbox[3])), (0, 255, 0), 5)
             # Output
             self.out_buf_detection_array[:, :] = selected_obj
-            self.out_port_detection_image.write( self.out_buf_detection_image)        
+            self.out_port_detection_image.write( self.out_buf_detection_image)
+        else:
+            min_distance = 1000
+            center_hm_bbox = ((hm_bbox_data_list[0] + hm_bbox_data_list[2])/2 , (hm_bbox_data_list[1] + hm_bbox_data_list[3])/2)    
+            for pred in predictions:
+                obj_label = pred.get("class")
+                obj_det_bbox = pred.get("bbox")
+                obj_det_bbox_float32 = np.array(obj_det_bbox, dtype=np.float32).tolist()
+                center_obj_det_bbox = ((obj_det_bbox_float32[0] + obj_det_bbox_float32[2])/2 , (obj_det_bbox_float32[1] + obj_det_bbox_float32[3])/2)
+                distance = self.dist(center_hm_bbox, center_obj_det_bbox)
+                if distance < min_distance:
+                    min_distance = distance
+                    selected_obj_label = obj_label
+                    selected_obj_bbox = obj_det_bbox_float32  
+            print("The visually attended object selected by distance is", selected_obj_label)                  
+            selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2, 2)
+            selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), int(selected_obj_bbox[3])), (0, 255, 0), 5)
+            # Output
+            self.out_buf_detection_array[:, :] = selected_obj
+            self.out_port_detection_image.write( self.out_buf_detection_image)
+                 
 
         return True                  
 

@@ -114,8 +114,7 @@ class AttentiveObjectDetection(yarp.RFModule):
         return 0.001
     
     # IoU
-    def iou(boxA, boxB):
-        print("unexpected argument received" + str(err))
+    def iou(self, boxA, boxB):
         # determine the (x, y)-coordinates of the intersection rectangle
         xA = max(boxA[0], boxB[0])
         yA = max(boxA[1], boxB[1])
@@ -177,9 +176,10 @@ class AttentiveObjectDetection(yarp.RFModule):
 
         # Selection & Visualization       
         max_iou = 0
+        selected_obj_label = None
         wallpaper = np.asarray(frame_raw)
         for pred in predictions:
-            obj_det_bbox = detection_dict.get("bbox")
+            obj_det_bbox = pred.get("bbox")
             print("obj_det_bbox is:", obj_det_bbox)
             obj_det_bbox_array = np.array(obj_det_bbox, dtype=np.float64)
             obj_det_bbox_float32 = obj_det_bbox_array.astype(np.float32).tolist()
@@ -188,16 +188,15 @@ class AttentiveObjectDetection(yarp.RFModule):
             print("inputs of iou: ", hm_bbox_data_list,obj_det_bbox_float32)         
             iou_value = self.iou(hm_bbox_data_list,obj_det_bbox_float32)
             if iou_value > max_iou:
-                selected_obj_label = detection_dict.get("class")
+                selected_obj_label = pred.get("class")
                 selected_obj_bbox = obj_det_bbox
                 max_iou = iou_value
-        
-        print("The visually attended object is", selected_obj_label)
-        selected_obj = cv2.rectangle(wallpaper, selected_obj_bbox[0:2], selected_obj_bbox[2:4], (0, 255, 0), 5)
-
-        # Output
-        self.out_buf_detection_array[:, :] = selected_obj
-        self.out_port_detection_image.write( self.out_buf_detection_image)        
+        if selected_obj_label is not None:
+            print("The visually attended object is", selected_obj_label)
+            selected_obj = cv2.rectangle(wallpaper, (int(selected_obj_bbox[0]), int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), int(selected_obj_bbox[3])), (0, 255, 0), 5)
+            # Output
+            self.out_buf_detection_array[:, :] = selected_obj
+            self.out_port_detection_image.write( self.out_buf_detection_image)        
 
         return True                  
 

@@ -48,6 +48,11 @@ class AttentiveObjectDetection(yarp.RFModule):
         self.in_port_objdet_data.open('/aod/objdet:i')
         print('{:s} opened'.format('/aod/objdet:i'))
 
+        # Output port for selected bbox data
+        self.out_port_bbox_data = yarp.BufferedPortBottle()
+        self.out_port_bbox_data.open('/aod/bbox:o')
+        print('{:s} opened'.format('/aod/bbox:o')
+
         # Output port for image and bboxes
         self.out_port_detection_image = yarp.Port()
         self.out_port_detection_image.open('/aod/detect:o')
@@ -208,8 +213,15 @@ class AttentiveObjectDetection(yarp.RFModule):
             selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), 
                                          int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), 
                                          int(selected_obj_bbox[3])), (0, 255, 0), 3)
+            
+            # Output to yarp port- selected bbox data
+            selected_bbox_data = yarp.Bottle()
+            selected_bbox_data.clear()
+            selected_bbox_data.addList(selected_obj_bbox)
+            selected_bbox_data.addString(selected_obj_label)
+            self.out_port_bbox_data.write(selected_bbox_data)
 
-            # Output to yarp port
+            # Output to yarp port- Image
             self.out_buf_detection_array[:, :] = selected_obj
             self.out_port_detection_image.write( self.out_buf_detection_image)
         else:

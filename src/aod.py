@@ -268,11 +268,11 @@ class AttentiveObjectDetection(yarp.RFModule):
                 self.out_port_detection_image.write( self.out_buf_detection_image)
         else:
             # Output to yarp port
-            no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (10,10), cv2.FONT_HERSHEY_SIMPLEX, 
-                                         0.7, (0, 255, 0), 2, 2)
+            no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
+                                         0.7, (255, 0, 0), 2, 2)
             no_object_array = np.asarray(no_object)
             self.out_buf_detection_array[:, :] = no_object_array
-            self.out_port_bbox_data.write(selected_bbox_data)
+            self.out_port_detection_image.write( self.out_buf_detection_image)
 
             # Output to yarp port- selected bbox data
             selected_bbox_data = yarp.Bottle() 

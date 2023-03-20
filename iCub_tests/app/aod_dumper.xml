@@ -1,0 +1,47 @@
+<application>
+<name>aod_dumper</name>
+<version>1.0</version>
+
+<dependencies>
+
+    <!-- Detected obj and lable RGB from AOD module -->
+    <port>/aod/detect:o</port>
+
+    <!-- Selected Bbox information from AOD module -->
+    <port>/aod/bbox:o</port>
+
+</dependencies>
+
+<!-- Modules -->
+
+<!-- Detected obj and lable RGB dumper  -->
+<module>
+    <name>yarpdatadumper</name>
+    <parameters> --name /AOD_dumper/sugarbox-masterchef-pringles/sugarbox/rgb_output --rxTime --txTime --type image </parameters>
+    <node>localhost</node>
+</module>
+
+<!-- Selected Bbox information dumper  -->
+<module>
+    <name>yarpdatadumper</name>
+    <parameters> --name /AOD_dumper/sugarbox-masterchef-pringles/sugarbox/bbox_data --rxTime --txTime --type bottle </parameters>
+    <node>localhost</node>
+</module>
+
+<!-- Connections -->
+
+<connection>
+    <from>/aod/detect:o</from>
+    <to>/AOD_dumper/sugarbox-masterchef-pringles/sugarbox/rgb_output</to>
+    <protocol> mjpeg </protocol>
+</connection>
+
+<connection>
+    <from>/aod/bbox:o</from>
+    <to>/AOD_dumper/sugarbox-masterchef-pringles/sugarbox/bbox_data</to>
+    <protocol> fast_tcp </protocol>
+</connection>
+    
+
+</application>
+    

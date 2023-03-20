@@ -3,8 +3,14 @@ Here you will find the documentation of several tests on iCub.
 ## Table of contents
 1. [Test 1: Run all modules ](#test-1-run-all-modules)
     - [Observations](#observations)
+    - [Result](#result)
+    - [Suggestions](#suggestions)
+2. [Test 2: Run all modules on dumped data](#test-2-run-all-modules-on-dumped-data)
+    - [Experiments](#experiments)
+    - [Experiment Guide](#experiment-guide)
+    - [Error evaluations](#error-evaluations)
 
-## Test 1: Run all modules 
+# Test 1: Run all modules 
 This is the first test where all 4 modules, OpenPose, VTD_bbox, Object detection and AOD run together.
 
 Steps followed in this test session:
@@ -74,3 +80,63 @@ For the next test the following changes can be applied:
 3. Retrain the object detection module with the white wall as the background to have better accuracy.
 4. Try the pipeline on the previously collected data.
 5. Record the accuracy on predictions and include the computation process into code.
+
+# Test 2: Run all modules on dumped data
+
+Here the goal is to run all the 4 modules with the previously dumped data and get the accuracy.
+
+An XML application file covering all the necessary modules and connections is created. Since the data is going to be dumped for further accuracy measurements, the `aod.py` is also modified such that the selected bbox and class will be provided in an output port.
+
+```
+# Output port for selected bbox data
+self.out_port_bbox_data = yarp.Port()
+self.out_port_bbox_data.open('/aod/bbox:o')
+print('{:s} opened'.format('/aod/bbox:o'))
+.
+.
+.
+# Output to yarp port- selected bbox data
+selected_bbox_data = yarp.Bottle()
+selected_bbox_data.addFloat32(selected_obj_bbox[0])
+selected_bbox_data.addFloat32(selected_obj_bbox[1])
+selected_bbox_data.addFloat32(selected_obj_bbox[2])
+selected_bbox_data.addFloat32(selected_obj_bbox[3])
+selected_bbox_data.addString(selected_obj_label)
+self.out_port_bbox_data.write(selected_bbox_data)
+```
+## Experiments
+For each session and for all the objects the experiments run separately and the accuracy level is documented in [AOD_accuracy](https://docs.google.com/spreadsheets/d/1TIPeJ0koiQdEmuwz81H_2rW8UlA4aqftBUxF0zRzvcQ/edit?usp=sharing) file.
+
+### Experiment Guide
+1. Connect the GPUs 
+2. Run all the modules: `OpenPose`, `ObjectDetection`, `VTD_bbox`, `AOD`
+3. open the folder with the previously dumped images.
+4. In the `rgb_input` folder in the `info.log` change the port names to `/dumped/image:o` (That is necessary since OpenPose itself opens the port named `yarpopenpose/propag:o` and yarp cannot have 2 ports with the same name.)
+3. modify the application file related to the dumper [aod_dumper.xml](), such that the file names make sense when saved.
+3. Run `yarpmanager` with the application file related to the dumpers (Do not connect yet).
+4. Run `yarpmanager` with the final application file created for all the modules [experiments.xml]() .
+4. In the `yarpdataplayer` window load the folder of images you need. Set the speed to 0.5(lowest), does not play the rgb_output, and does not repeat the images.
+5. connet the main xml application [experiments.xml]()
+6. run and connect the datadumpers (usually you need to refresh to make sure everything works)
+7. play the data
+8. when dataplayer is done disconnect the main xml and stop only the dataplayer module, disconnect and stop the dumper xml
+9. check the dumped folder in the home direction. and compare the number of frames in the resource folder, the number of frames evaluated and the correctness.
+10. move the dumped data to the related folder and delet the created folder since it will be created next time you use the dumper.
+
+### Error evaluations
+- Sugarbox
+
+    When there is a sugarbox among the objects, and specifically visually intended, there is an error, since the object detection module fails to detect it correctly and provide the boundingbox information. In this situation only 3 frames out of 54 initial frames are evaluated and all selects the pringles as an output.
+
+    <img src="Img/error_sugarbox.png">
+
+- Driller & mustard
+
+    The problem with the driller is related to the object detection module. The module does not identify the driller. Therefore, the closest boundingbox is selected, which should be mustard but there is a problem with the label of the object detection and it is classified as the bleach. Here 55 frames out of 58 is evaluated but all of them classified in wrong labels.
+
+    <img src="Img/error_driller.png">
+
+- `No contours found`
+    When the `vtd_bbox ` connot find the visually attended area, it would not creat a heatmap and therefore there will be no contours related to the heatmap. This problem causes an error and prevents the code from running properly. This causes a huge error in the session3 with sugarbox, materchef, pringles and when pringles is attended. Here 0 frames out of 56 frames are evaluated.
+
+    <img src="Img/error_nocontour.png">

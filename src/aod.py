@@ -151,134 +151,132 @@ class AttentiveObjectDetection(yarp.RFModule):
             self.in_buf_scene_image.copy(received_image)
             self.out_buf_propag_image.copy(received_image)
             assert self.in_buf_scene_array.__array_interface__['data'][0] == self.in_buf_scene_image.getRawImage().__int__()   
-        else:
-            print('NO INPUT IMAGE.')
-        frame_raw = Image.fromarray(self.in_buf_scene_array) 
+            frame_raw = Image.fromarray(self.in_buf_scene_array) 
 
+            # Recieve object detection data
+            obj_det_data = yarp.Bottle()
+            obj_det_data.clear()
+            obj_det_data = self.in_port_objdet_data.read()
+            predictions= []
+            if obj_det_data is not None:  
+                for i in range(0, obj_det_data.size()):  
+                    dets = obj_det_data.get(i).asList() 
+                    if dets.get(0).isFloat64():  
+                        bbox = [dets.get(0).asFloat64(), dets.get(1).asFloat64(), dets.get(2).asFloat64(),  
+                                dets.get(3).asFloat64()] # bbox format: [tl_x, tl_y, br_x, br_y]
+                        cls = dets.get(5).asString() # label of i-th detection
 
-        # Recieve object detection data
-        obj_det_data = yarp.Bottle()
-        obj_det_data.clear()
-        obj_det_data = self.in_port_objdet_data.read()
-        predictions= []
-        if obj_det_data is not None:  
-            for i in range(0, obj_det_data.size()):  
-                dets = obj_det_data.get(i).asList() 
-                if dets.get(0).isFloat64():  
-                    bbox = [dets.get(0).asFloat64(), dets.get(1).asFloat64(), dets.get(2).asFloat64(),  
-                            dets.get(3).asFloat64()] # bbox format: [tl_x, tl_y, br_x, br_y]
-                    cls = dets.get(5).asString() # label of i-th detection
-
-                    detection_dict = { 
-                        'bbox': bbox,  
-                        'class': cls  } 
-                    predictions.append(detection_dict)
-        else:
-            print("No information recieved from object detection module")
-
-        
-        # Recieve heatmap bbox data
-        hm_bbox_data = yarp.Bottle()
-        hm_bbox_data.clear()
-        hm_bbox_data = self.in_port_hm_bbox_data.read()
-        hm_bbox_data_list = []
-        for i in range(hm_bbox_data.size()):
-             hm_bbox_data_list.append(hm_bbox_data.get(i).asFloat32())
-
-        if hm_bbox_data_list is not None:
-
-            # Selection & Visualization       
-            max_iou = 0
-            selected_obj_label = None
-            wallpaper = np.asarray(frame_raw)
-            for pred in predictions:
-                obj_label = pred.get("class")
-                obj_det_bbox = pred.get("bbox")
-                obj_det_bbox_float32 = np.array(obj_det_bbox, dtype=np.float32).tolist()
-                top_left = (int(obj_det_bbox[0]), int(obj_det_bbox[1]))
-                bottom_right = (int(obj_det_bbox[2]), int(obj_det_bbox[3]))
-                label_draw = cv2.putText(wallpaper, obj_label, (top_left[0], top_left[1]-20), 
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1, 2)
-                bbox_draw = cv2.rectangle(label_draw, top_left, bottom_right, (0, 0, 255), 2)
-                wallpaper = bbox_draw         
-                iou_value = self.iou(hm_bbox_data_list,obj_det_bbox_float32)
-                if iou_value > max_iou:
-                    selected_obj_label = obj_label               
-                    selected_obj_bbox = obj_det_bbox
-                    max_iou = iou_value
-
-
-            if selected_obj_label is not None:
-                print("The visually attended object selected by IoU is", selected_obj_label)
-                selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]),
-                                            int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 
-                                            0.7, (0, 255, 0), 2, 2)
-                selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), 
-                                            int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), 
-                                            int(selected_obj_bbox[3])), (0, 255, 0), 3)
-                
-                # Output to yarp port- selected bbox data
-                selected_bbox_data = yarp.Bottle()
-                selected_bbox_data.addFloat32(selected_obj_bbox[0])
-                selected_bbox_data.addFloat32(selected_obj_bbox[1])
-                selected_bbox_data.addFloat32(selected_obj_bbox[2])
-                selected_bbox_data.addFloat32(selected_obj_bbox[3])
-                selected_bbox_data.addString(selected_obj_label)
-                self.out_port_bbox_data.write(selected_bbox_data)
-
-                # Output to yarp port- Image
-                self.out_buf_detection_array[:, :] = selected_obj
-                self.out_port_detection_image.write( self.out_buf_detection_image)
+                        detection_dict = { 
+                            'bbox': bbox,  
+                            'class': cls  } 
+                        predictions.append(detection_dict)
             else:
-                min_distance = 1000000
-                center_hm_bbox = ((hm_bbox_data_list[0] + hm_bbox_data_list[2])/2 , 
-                                (hm_bbox_data_list[1] + hm_bbox_data_list[3])/2)    
+                print("No information recieved from object detection module")
+
+            
+            # Recieve heatmap bbox data
+            hm_bbox_data = yarp.Bottle()
+            hm_bbox_data.clear()
+            hm_bbox_data = self.in_port_hm_bbox_data.read()
+            hm_bbox_data_list = []
+            for i in range(hm_bbox_data.size()):
+                hm_bbox_data_list.append(hm_bbox_data.get(i).asFloat32())
+
+            if hm_bbox_data_list:
+
+                # Selection & Visualization       
+                max_iou = 0
+                selected_obj_label = None
+                wallpaper = np.asarray(frame_raw)
                 for pred in predictions:
                     obj_label = pred.get("class")
                     obj_det_bbox = pred.get("bbox")
                     obj_det_bbox_float32 = np.array(obj_det_bbox, dtype=np.float32).tolist()
-                    center_obj_det_bbox = ((obj_det_bbox_float32[0] + obj_det_bbox_float32[2])/2 , 
-                                            (obj_det_bbox_float32[1] + obj_det_bbox_float32[3])/2)
-                    distance = self.dist(center_hm_bbox, center_obj_det_bbox)
-                    if distance < min_distance:
-                        min_distance = distance
-                        selected_obj_label = obj_label
-                        selected_obj_bbox = obj_det_bbox_float32  
-                print("The visually attended object selected by DISTANCE is", selected_obj_label)                  
-                selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]),
-                                            int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 
-                                            0.7, (0, 255, 0), 2, 2)
-                selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), 
-                                            int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]),
-                                            int(selected_obj_bbox[3])), (0, 255, 0), 5)
-                
-                                            
-                # Output to yarp port- selected bbox data
-                selected_bbox_data = yarp.Bottle()
-                selected_bbox_data.addFloat32(selected_obj_bbox[0])
-                selected_bbox_data.addFloat32(selected_obj_bbox[1])
-                selected_bbox_data.addFloat32(selected_obj_bbox[2])
-                selected_bbox_data.addFloat32(selected_obj_bbox[3])
-                selected_bbox_data.addString(selected_obj_label)
-                self.out_port_bbox_data.write(selected_bbox_data)
+                    top_left = (int(obj_det_bbox[0]), int(obj_det_bbox[1]))
+                    bottom_right = (int(obj_det_bbox[2]), int(obj_det_bbox[3]))
+                    label_draw = cv2.putText(wallpaper, obj_label, (top_left[0], top_left[1]-20), 
+                                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1, 2)
+                    bbox_draw = cv2.rectangle(label_draw, top_left, bottom_right, (0, 0, 255), 2)
+                    wallpaper = bbox_draw         
+                    iou_value = self.iou(hm_bbox_data_list,obj_det_bbox_float32)
+                    if iou_value > max_iou:
+                        selected_obj_label = obj_label               
+                        selected_obj_bbox = obj_det_bbox
+                        max_iou = iou_value
 
 
+                if selected_obj_label is not None:
+                    print("The visually attended object selected by IoU is", selected_obj_label)
+                    selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]),
+                                                int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 
+                                                0.7, (0, 255, 0), 2, 2)
+                    selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), 
+                                                int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]), 
+                                                int(selected_obj_bbox[3])), (0, 255, 0), 3)
+                    
+                    # Output to yarp port- selected bbox data
+                    selected_bbox_data = yarp.Bottle()
+                    selected_bbox_data.addFloat32(selected_obj_bbox[0])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[1])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[2])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[3])
+                    selected_bbox_data.addString(selected_obj_label)
+                    self.out_port_bbox_data.write(selected_bbox_data)
+
+                    # Output to yarp port- Image
+                    self.out_buf_detection_array[:, :] = selected_obj
+                    self.out_port_detection_image.write( self.out_buf_detection_image)
+                else:
+                    min_distance = 1000000
+                    center_hm_bbox = ((hm_bbox_data_list[0] + hm_bbox_data_list[2])/2 , 
+                                    (hm_bbox_data_list[1] + hm_bbox_data_list[3])/2)    
+                    for pred in predictions:
+                        obj_label = pred.get("class")
+                        obj_det_bbox = pred.get("bbox")
+                        obj_det_bbox_float32 = np.array(obj_det_bbox, dtype=np.float32).tolist()
+                        center_obj_det_bbox = ((obj_det_bbox_float32[0] + obj_det_bbox_float32[2])/2 , 
+                                                (obj_det_bbox_float32[1] + obj_det_bbox_float32[3])/2)
+                        distance = self.dist(center_hm_bbox, center_obj_det_bbox)
+                        if distance < min_distance:
+                            min_distance = distance
+                            selected_obj_label = obj_label
+                            selected_obj_bbox = obj_det_bbox_float32  
+                    print("The visually attended object selected by DISTANCE is", selected_obj_label)                  
+                    selected_label = cv2.putText(wallpaper, selected_obj_label, (int(selected_obj_bbox[0]),
+                                                int(selected_obj_bbox[1])-20), cv2.FONT_HERSHEY_SIMPLEX, 
+                                                0.7, (0, 255, 0), 2, 2)
+                    selected_obj = cv2.rectangle(selected_label, (int(selected_obj_bbox[0]), 
+                                                int(selected_obj_bbox[1])), (int(selected_obj_bbox[2]),
+                                                int(selected_obj_bbox[3])), (0, 255, 0), 5)
+                    
+                                                
+                    # Output to yarp port- selected bbox data
+                    selected_bbox_data = yarp.Bottle()
+                    selected_bbox_data.addFloat32(selected_obj_bbox[0])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[1])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[2])
+                    selected_bbox_data.addFloat32(selected_obj_bbox[3])
+                    selected_bbox_data.addString(selected_obj_label)
+                    self.out_port_bbox_data.write(selected_bbox_data)
+
+
+                    # Output to yarp port
+                    self.out_buf_detection_array[:, :] = selected_obj
+                    self.out_port_detection_image.write( self.out_buf_detection_image)
+            else:
                 # Output to yarp port
-                self.out_buf_detection_array[:, :] = selected_obj
+                no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
+                                            0.7, (255, 0, 0), 2, 2)
+                no_object_array = np.asarray(no_object)
+                self.out_buf_detection_array[:, :] = no_object_array
                 self.out_port_detection_image.write( self.out_buf_detection_image)
+
+                # Output to yarp port- selected bbox data
+                selected_bbox_data = yarp.Bottle() 
+                selected_bbox_data.addString('None of the objects visually attended.')
+                self.out_port_bbox_data.write(selected_bbox_data)
         else:
-            # Output to yarp port
-            no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
-                                         0.7, (255, 0, 0), 2, 2)
-            no_object_array = np.asarray(no_object)
-            self.out_buf_detection_array[:, :] = no_object_array
-            self.out_port_detection_image.write( self.out_buf_detection_image)
-
-            # Output to yarp port- selected bbox data
-            selected_bbox_data = yarp.Bottle() 
-            selected_bbox_data.addString('None of the objects visually attended.')
-            self.out_port_bbox_data.write(selected_bbox_data)
-
+            print('NO INPUT IMAGE.')
         return True                  
 
 if __name__ == '__main__':

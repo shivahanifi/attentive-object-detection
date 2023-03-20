@@ -176,11 +176,10 @@ class AttentiveObjectDetection(yarp.RFModule):
                 hm_bbox_data.clear()
                 hm_bbox_data = self.in_port_hm_bbox_data.read(False)
                 hm_bbox_data_list = []
-                for i in range(hm_bbox_data.size()):
-                    hm_bbox_data_list.append(hm_bbox_data.get(i).asFloat32())
 
-                if hm_bbox_data_list:
-
+                if hm_bbox_data is not None:
+                    for i in range(hm_bbox_data.size()):
+                        hm_bbox_data_list.append(hm_bbox_data.get(i).asFloat32())
                     # Selection & Visualization       
                     max_iou = 0
                     selected_obj_label = None

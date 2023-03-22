@@ -140,3 +140,25 @@ For each session and for all the objects the experiments run separately and the 
     When the `vtd_bbox ` connot find the visually attended area, it would not creat a heatmap and therefore there will be no contours related to the heatmap. This problem causes an error and prevents the code from running properly. This causes a huge error in the session3 with sugarbox, materchef, pringles and when pringles is attended. Here 0 frames out of 56 frames are evaluated.
 
     <img src="Img/error_nocontour.png">
+
+    NOTE: This error was solved using the raw_frame and printing on it `No object was visually attended.`
+
+- Sugarbox & driller
+
+    <img src="Img/error_sugarbox_driller.png">
+
+- No heatmap
+
+    <img src="Img/error_noheatmap.png">
+
+- Depth related
+
+    <img src="Img/error_depth.png">
+
+- Driller
+
+    <img src="Img/error_driller_2.png">
+
+- Wrong heatmap
+
+    <img src="Img/error_heatmap.png">

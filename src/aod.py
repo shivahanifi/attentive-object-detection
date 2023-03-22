@@ -63,7 +63,7 @@ class AttentiveObjectDetection(yarp.RFModule):
                                              self.out_buf_detection_array.shape[0])
         print('{:s} opened'.format('/aod/detect:o'))
 
-        # Propag input image
+        # Propag output image
         self.out_port_propag_image = yarp.Port()
         self.out_port_propag_image.open('/aod/propag:o')
         self.out_buf_propag_image_array = np.ones((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=np.uint8)
@@ -149,7 +149,6 @@ class AttentiveObjectDetection(yarp.RFModule):
         received_image = self.in_port_scene_image.read()
         if received_image is not None:
             self.in_buf_scene_image.copy(received_image)
-            self.out_buf_propag_image.copy(received_image)
             assert self.in_buf_scene_array.__array_interface__['data'][0] == self.in_buf_scene_image.getRawImage().__int__()   
             frame_raw = Image.fromarray(self.in_buf_scene_array) 
 
@@ -259,19 +258,31 @@ class AttentiveObjectDetection(yarp.RFModule):
                         # Output to yarp port
                         self.out_buf_detection_array[:, :] = selected_obj
                         self.out_port_detection_image.write( self.out_buf_detection_image)
-                else:
-                    # Output to yarp port
-                    print('No heatmap detected')
-                    no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
-                                                0.7, (255, 0, 0), 2, 2)
-                    no_object_array = np.asarray(no_object)
-                    self.out_buf_detection_array[:, :] = no_object_array
-                    self.out_port_detection_image.write( self.out_buf_detection_image)
 
-                    # Output to yarp port- selected bbox data
-                    selected_bbox_data = yarp.Bottle() 
-                    selected_bbox_data.addString('None of the objects visually attended.')
-                    self.out_port_bbox_data.write(selected_bbox_data)
+                        # Copy output to propagation port
+                        self.out_buf_propag_image_array = selected_obj
+                        self.out_port_propag_image.write(self.out_buf_propag_image)
+                else:
+                    # # Output to yarp port
+                    # print('No heatmap detected')
+                    # no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
+                    #                             0.7, (255, 0, 0), 2, 2)
+                    # no_object_array = np.asarray(no_object)
+                    # self.out_buf_detection_array[:, :] = no_object_array
+                    # self.out_port_detection_image.write( self.out_buf_detection_image)
+
+                    # # Output to yarp port- selected bbox data
+                    # selected_bbox_data = yarp.Bottle() 
+                    # selected_bbox_data.addString('None of the objects visually attended.')
+                    # self.out_port_bbox_data.write(selected_bbox_data)
+                    
+                    previous_selected_object = self.out_port_propag_image.read()
+                    self.out_buf_propag_image.copy(received_image)
+                    assert self.out_buf_propag_image_array.__array_interface__['data'][0] == self.out_buf_propag_image.getRawImage().__int__()   
+                    selected_obj = Image.fromarray(self.out_buf_propag_image_array) 
+
+                    self.out_buf_detection_array[:, :] = selected_obj
+                    self.out_port_detection_image.write( self.out_buf_detection_image)
             else:
                 print("No information recieved from object detection module")
         else:

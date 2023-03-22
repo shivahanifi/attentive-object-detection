@@ -263,26 +263,18 @@ class AttentiveObjectDetection(yarp.RFModule):
                         self.out_buf_propag_image_array = selected_obj
                         self.out_port_propag_image.write(self.out_buf_propag_image)
                 else:
-                    # # Output to yarp port
-                    # print('No heatmap detected')
-                    # no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
-                    #                             0.7, (255, 0, 0), 2, 2)
-                    # no_object_array = np.asarray(no_object)
-                    # self.out_buf_detection_array[:, :] = no_object_array
-                    # self.out_port_detection_image.write( self.out_buf_detection_image)
-
-                    # # Output to yarp port- selected bbox data
-                    # selected_bbox_data = yarp.Bottle() 
-                    # selected_bbox_data.addString('None of the objects visually attended.')
-                    # self.out_port_bbox_data.write(selected_bbox_data)
-                    
-                    previous_selected_object = self.out_port_propag_image.read()
-                    self.out_buf_propag_image.copy(received_image)
-                    assert self.out_buf_propag_image_array.__array_interface__['data'][0] == self.out_buf_propag_image.getRawImage().__int__()   
-                    selected_obj = Image.fromarray(self.out_buf_propag_image_array) 
-
-                    self.out_buf_detection_array[:, :] = selected_obj
+                    # Output to yarp port
+                    print('No heatmap detected')
+                    no_object = cv2.putText(np.asarray(frame_raw), 'Non of the objects visually attended.', (30,30), cv2.FONT_HERSHEY_SIMPLEX, 
+                                                 0.7, (255, 0, 0), 2, 2)
+                    no_object_array = np.asarray(no_object)
+                    self.out_buf_detection_array[:, :] = no_object_array
                     self.out_port_detection_image.write( self.out_buf_detection_image)
+
+                    # Output to yarp port- selected bbox data
+                    selected_bbox_data = yarp.Bottle() 
+                    selected_bbox_data.addString('None of the objects visually attended.')
+                    self.out_port_bbox_data.write(selected_bbox_data)
             else:
                 print("No information recieved from object detection module")
         else:

@@ -14,7 +14,7 @@ Here you will find the documentation of several tests on iCub.
 - [Test 3: Accuracy Improvement](#test-3-accuracy-improvement)
   - [Accuracy](#accuracy-1)
   - [Error evaluations](#error-evaluations-1)
-  - [Removing driller](#removing-driller)
+  - [Suggestions](#suggestions-1)
 
 # Test 1: Run all modules 
 This is the first test where all 4 modules, OpenPose, VTD_bbox, Object detection and AOD run together.
@@ -305,5 +305,10 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
     - Heatmap closer to bleach 44/52
     <img src="Img/error_s5_mustard2.png">
 
-## Removing driller
-Since detection module is having a problem with driller, we decided to remove the driller from the accuracy measurement and consider it as a distracting object in the experiment. With this choice the accuracy is 77%.
+## Suggestions
+- Removing the driller
+  
+    Since detection module is having a problem with driller, we decided to remove the driller from the accuracy measurement and consider it as a distracting object in the experiment. With this choice the accuracy is 77%.
+- Improving heatmap generation
+- Avoiding outer parts when placing the objects
+- Considering depth

@@ -1,14 +1,19 @@
 # Tests on icub with AOD module
 Here you will find the documentation of several tests on iCub.
 ## Table of contents
-1. [Test 1: Run all modules ](#test-1-run-all-modules)
+- [Tests on icub with AOD module](#tests-on-icub-with-aod-module)
+  - [Table of contents](#table-of-contents)
+- [Test 1: Run all modules](#test-1-run-all-modules)
     - [Observations](#observations)
-    - [Result](#result)
-    - [Suggestions](#suggestions)
-2. [Test 2: Run all modules on dumped data](#test-2-run-all-modules-on-dumped-data)
-    - [Experiments](#experiments)
+  - [Result](#result)
+  - [Suggestions](#suggestions)
+- [Test 2: Run all modules on dumped data](#test-2-run-all-modules-on-dumped-data)
     - [Experiment Guide](#experiment-guide)
+    - [Accuracy](#accuracy)
     - [Error evaluations](#error-evaluations)
+- [Test 3: Accuracy Improvement](#test-3-accuracy-improvement)
+  - [Accuracy](#accuracy-1)
+  - [Error evaluations](#error-evaluations-1)
 
 # Test 1: Run all modules 
 This is the first test where all 4 modules, OpenPose, VTD_bbox, Object detection and AOD run together.
@@ -85,6 +90,12 @@ For the next test the following changes can be applied:
 
 Here the goal is to run all the 4 modules with the previously dumped data and get the accuracy.
 
+The input data is:
+
+[VTD_dumper_Shiva_modified](https://drive.google.com/file/d/18wyL1QkraeLjTcWO39pYeaLJ8Yimw8sk/view?usp=sharing)
+
+[VTD_dumper_Elisa_modified](https://drive.google.com/file/d/1Hgok6huHKvgvTxaaHKq01ycZLqmQrOgu/view?usp=sharing)
+
 An XML application file covering all the necessary modules and connections is created. Since the data is going to be dumped for further accuracy measurements, the `aod.py` is also modified such that the selected bbox and class will be provided in an output port.
 
 ```
@@ -104,9 +115,11 @@ selected_bbox_data.addFloat32(selected_obj_bbox[3])
 selected_bbox_data.addString(selected_obj_label)
 self.out_port_bbox_data.write(selected_bbox_data)
 ```
-## Experiments
-For each session and for all the objects the experiments run separately and the accuracy level is documented in [AOD_accuracy](https://docs.google.com/spreadsheets/d/1TIPeJ0koiQdEmuwz81H_2rW8UlA4aqftBUxF0zRzvcQ/edit?usp=sharing) file.
+Dumped data can be found here:
 
+[AOD_dumper_Elisa](https://drive.google.com/file/d/1MzxO8FakUPQwlzolOJa6i-sFAS48IVzN/view?usp=sharing)
+
+[AOD_dumper_Shiva](https://drive.google.com/file/d/1NMsW493tSkeP0D_O26RCKilJmTrUAiDk/view?usp=sharing)
 ### Experiment Guide
 1. Connect the GPUs 
 2. Run all the modules: `OpenPose`, `ObjectDetection`, `VTD_bbox`, `AOD`
@@ -122,6 +135,11 @@ For each session and for all the objects the experiments run separately and the 
 8. when dataplayer is done disconnect the main xml and stop only the dataplayer module, disconnect and stop the dumper xml
 9. check the dumped folder in the home direction. and compare the number of frames in the resource folder, the number of frames evaluated and the correctness.
 10. move the dumped data to the related folder and delet the created folder since it will be created next time you use the dumper.
+
+### Accuracy
+For each session and for all the objects the experiments run separately and the accuracy level is documented in [AOD_accuracy](https://docs.google.com/spreadsheets/d/1TIPeJ0koiQdEmuwz81H_2rW8UlA4aqftBUxF0zRzvcQ/edit?usp=sharing) file.
+
+<img src="Img/AOD_accuracy.png">
 
 ### Error evaluations
 - Sugarbox
@@ -162,3 +180,126 @@ For each session and for all the objects the experiments run separately and the 
 - Wrong heatmap
 
     <img src="Img/error_heatmap.png">
+
+# Test 3: Accuracy Improvement
+In this step the aim was to improve the accuracy. To do so, the object detection module was retrained with the objects that were not being detected properly.(i.e. driller, sugarbox also mustard and bleach since they were being confused.) The steps of the test 2 were followed again and the performance recorded. The output image and the boundingbox information were dumped for each session.
+
+[AOD_improved_dumper_elisa](https://drive.google.com/file/d/1ACwUKofXA4AIGfWleVx1xc5_OQtymTv7/view?usp=sharing)
+
+[AOD_improved_dumper_shiva](https://drive.google.com/file/d/1CmSAspFnq5NWJbBIk5ZHKtL4P_I1h9cu/view?usp=sharing)
+
+## Accuracy
+The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_improved](https://docs.google.com/spreadsheets/d/1okRH6bXjePhQQ3mJI54i0lUzAdD2E7il1s8GgB9pnIE/edit?usp=sharing)
+
+<img src="Img/AOD_acuracy_improved.png">
+
+## Error evaluations
+- Session2, sugarbox  
+  Object detection : 
+    - Not detected in all cases
+    <img src="Img/error_s2_sugarbox.png">
+
+- Session3, driller  
+  Heatmap : 
+    - Heatmap closer to mustard in all cases
+    <img src="Img/error_s3_driller.png">
+
+  Object detection : 
+    - Not detected in all cases
+    <img src="Img/error_s3_driller2.png">
+
+- Session3, sugarbox  
+  Heatmap : 
+    - No heatmap in 13/46 cases 
+    - Heatmap closer to masterchef 12/46
+    <img src="Img/error_s3_sugarbox.png">
+
+  Heatmap : 
+    - Heatmap closer to masterchef 46/56
+    - Heatmap closer to pringles 10/56
+    <img src="Img/error_s3_sugarbox2.png">
+
+- Session3, pringles  
+  Heatmap : 
+    - No heatmap in all of the cases
+    <img src="Img/error_s3_pringles.png">
+
+  Heatmap : 
+    - Heatmap closer to masterchef in all cases
+    <img src="Img/error_s3_pringles2.png">
+
+- Session4, sugarbox  
+  Heatmap : 
+    - driller in all of the cases
+    <img src="Img/error_s4_sugarbox.png">
+
+  Heatmap : 
+    - No heatmap in almost all of the cases
+    <img src="Img/error_s4_sugarbox2.png">
+
+- Session4, pringles  
+  Heatmap : 
+    - No heatmap in 28/58 cases
+    <img src="Img/error_s4_pringles.png">  
+  
+- Session4, driller  
+  Object detection : 
+    - Not detected in all cases
+    <img src="Img/error_s4_driller.png"> 
+
+  Object detection : 
+    - Not detected in all cases
+    <img src="Img/error_s4_driller2.png"> 
+
+  Object detection : 
+    - Not detected in all cases
+    <img src="Img/error_s4_driller3.png"> 
+
+- Session4, bleach  
+  Heatmap : 
+    - depth
+    <img src="Img/error_s4_bleach.png"> 
+
+- Session4, masterchef  
+  Heatmap : 
+    - No heatmap in 45/51 cases
+    <img src="Img/error_s4_masterchef.png"> 
+
+- Session5, driller  
+  Object detection : 
+    - Not detected in all the cases
+    - No heatmap in 16/57 cases
+    <img src="Img/error_s5_driller.png"> 
+
+  Object detection : 
+    - Not detected in all the cases
+    - Heatmap not close
+    <img src="Img/error_s5_driller2.png"> 
+
+- Session5, pringles  
+  Heatmap : 
+    - Heatmap closer to masterchef 40/65
+    <img src="Img/error_s5_pringles.png">
+
+  Heatmap : 
+    - Heatmap closer to masterchef 12/55
+    <img src="Img/error_s5_pringles2.png">
+
+- Session5, bleach  
+  Object detection : 
+    - Not detected in all the cases
+    <img src="Img/error_s5_bleach.png">
+
+  Heatmap : 
+    - No heatmap in 33/53 cases
+    <img src="Img/error_s5_bleach2.png">
+
+- Session5, mustard  
+  Heatmap : 
+    - Not detected in almost all the cases
+    <img src="Img/error_s5_mustard.png">
+
+  Heatmap : 
+    - depth
+    - Heatmap closer to bleach 44/52
+    <img src="Img/error_s5_mustard2.png">

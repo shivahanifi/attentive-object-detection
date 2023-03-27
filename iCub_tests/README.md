@@ -192,7 +192,7 @@ In this step the aim was to improve the accuracy. To do so, the object detection
 ## Accuracy
 The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_improved](https://docs.google.com/spreadsheets/d/1okRH6bXjePhQQ3mJI54i0lUzAdD2E7il1s8GgB9pnIE/edit?usp=sharing)
 
-<img src="Img/AOD_acuracy_improved.png">
+<img src="Img/AOD_accuracy_improved.png">
 
 ## Error evaluations
 - Session2, sugarbox  
@@ -224,6 +224,7 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in all of the cases
     <img src="Img/error_s3_pringles.png">
+    
     NOTE: Heatmap was detected when testing only the VTD.
     <img src="Img/vtd_output_pringles.png">
 
@@ -239,13 +240,15 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in almost all of the cases
     <img src="Img/error_s4_sugarbox2.png">
+
     NOTE: Heatmap detected in VTD tests.
     <img src="Img/vtd_output_sugarbox.png">
 
 - Session4, pringles  
   Heatmap : 
     - No heatmap in 28/58 cases
-    <img src="Img/error_s4_pringles.png">  
+    <img src="Img/error_s4_pringles.png"> 
+
     NOTE: Heatmap detected in VTD test.
     <img src="Img/vtd_output_pringles2.png">
   
@@ -271,6 +274,7 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in 45/51 cases
     <img src="Img/error_s4_masterchef.png"> 
+
     NOTE: Heatmap detected in VTD test.
     <img src="Img/vtd_output_masterchef2.png"> 
 
@@ -302,6 +306,7 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in 33/53 cases
     <img src="Img/error_s5_bleach2.png">
+
     NOTE: Heatmap detected in VTD tests.
     <img src="Img/vtd_output_bleach.png">
 
@@ -309,6 +314,7 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - Not detected in almost all the cases
     <img src="Img/error_s5_mustard.png">
+
     NOTE: Heatmap detected in VTD tests.
     <img src="Img/vtd_output_mustard.png">
 
@@ -320,7 +326,8 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
 ## Suggestions
 - Removing the driller
   
-    Since detection module is having a problem with driller, we decided to remove the driller from the accuracy measurement and consider it as a distracting object in the experiment. With this choice the accuracy is 77%.
+    Since detection module is having a problem with driller, we decided to remove the driller from the accuracy measurement and consider it as a distracting object in the experiment. With this choice the accuracy is 77%. [AOD_accuracy_nodriller](https://docs.google.com/spreadsheets/d/1-WOvI_r23NL0uy_pRoSiXccOVUmgzq0-Bmc8shQKTBE/edit?usp=sharing)
+    <img src="Img/AOD_accuracy_nodriller.png">
 - Improving heatmap generation
 - Avoiding outer parts when placing the objects
 - Considering depths

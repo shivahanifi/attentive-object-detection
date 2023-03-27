@@ -224,6 +224,8 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in all of the cases
     <img src="Img/error_s3_pringles.png">
+    NOTE: Heatmap was detected when testing only the VTD.
+    <img src="Img/vtd_output_pringles.png">
 
   Heatmap : 
     - Heatmap closer to masterchef in all cases
@@ -237,11 +239,15 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in almost all of the cases
     <img src="Img/error_s4_sugarbox2.png">
+    NOTE: Heatmap detected in VTD tests.
+    <img src="Img/vtd_output_sugarbox.png">
 
 - Session4, pringles  
   Heatmap : 
     - No heatmap in 28/58 cases
     <img src="Img/error_s4_pringles.png">  
+    NOTE: Heatmap detected in VTD test.
+    <img src="Img/vtd_output_pringles2.png">
   
 - Session4, driller  
   Object detection : 
@@ -265,6 +271,8 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in 45/51 cases
     <img src="Img/error_s4_masterchef.png"> 
+    NOTE: Heatmap detected in VTD test.
+    <img src="Img/vtd_output_masterchef2.png"> 
 
 - Session5, driller  
   Object detection : 
@@ -294,11 +302,15 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
   Heatmap : 
     - No heatmap in 33/53 cases
     <img src="Img/error_s5_bleach2.png">
+    NOTE: Heatmap detected in VTD tests.
+    <img src="Img/vtd_output_bleach.png">
 
 - Session5, mustard  
   Heatmap : 
     - Not detected in almost all the cases
     <img src="Img/error_s5_mustard.png">
+    NOTE: Heatmap detected in VTD tests.
+    <img src="Img/vtd_output_mustard.png">
 
   Heatmap : 
     - depth
@@ -311,4 +323,4 @@ The accuracy was improved from 41% to 71% after the retraining. [AOD_acuracy_imp
     Since detection module is having a problem with driller, we decided to remove the driller from the accuracy measurement and consider it as a distracting object in the experiment. With this choice the accuracy is 77%.
 - Improving heatmap generation
 - Avoiding outer parts when placing the objects
-- Considering depth
+- Considering depths

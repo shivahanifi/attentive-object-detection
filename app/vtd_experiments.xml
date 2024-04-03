@@ -1,0 +1,134 @@
+<application>
+<name> Shiva experiments </name>
+<version>1.0</version>
+
+
+<!-- Modules -->
+     <module>
+        <name>yarpdataplayer</name>
+        <parameters>--withExtraTimeCol 2</parameters>
+        <node>iiticublap235</node>
+     </module>
+
+     <module>
+	<name>yarpOpenPose</name>
+	<parameters> --from /home/icub/shared/conf/yarpOpenPose.ini</parameters>
+	<environment>YARP_FORWARD_LOG_ENABLE=1</environment>
+	<node>docker-mg</node>
+    </module>
+	
+    <module>
+        <name>yarpview</name>
+        <node>localhost</node>
+        <parameters>--name /viewer/detection --x 600 --y 0 --w 500 --h 480 --RefreshTime 33 --compact</parameters>
+    </module>
+    
+    <module>
+	<name>yarpview</name>
+	<parameters>--name /view/bbox_final --w 640 --h 480</parameters>
+	<node>localhost</node>
+    </module>
+
+    <module>
+	<name>yarpview</name>
+	<parameters>--name /view/bbox --w 640 --h 480</parameters>
+	<node>localhost</node>
+    </module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /viewer/skeleton --x 300 --y 80 --w 1000 --h 980  --compact</parameters>
+		<node>localhost</node>
+	</module>
+
+	<module>
+        	<name>yarpview</name>
+        	<node>localhost</node>
+        	<parameters>--name /viewer/normMap --w 640 --h 480</parameters>
+    	</module>
+
+<!-- CONNECTIONS -->
+
+	<connection>
+		<from>/dumped/image:o</from>
+		<to>/yarpOpenPose/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+	
+	<connection>
+		<from>/yarpOpenPose/propag:o</from>
+		<to>/vtd_bbox/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+	<!-- yarpopenpose data to vtd input -->
+    <connection>
+		<from>/yarpOpenPose/target:o</from>
+		<to>/vtd_bbox/data:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+    <!-- RGB propagated through vtd_bbox input for aod -->
+	<connection>
+		<from>/vtd_bbox/propag:o</from>
+		<to>/aod/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+	<!-- heatmap bbox data to aod input -->
+    <connection>
+		<from>/vtd_bbox/hm_bbox:o</from>
+		<to>/aod/hmbbox:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+	<!-- object detection data to aod input -->
+    <connection>
+		<from>/detection/dets:o</from>
+		<to>/aod/objdet:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	
+    <connection>
+        <from>/yarpOpenPose/propag:o</from>
+        <to>/detection/image:i</to>
+        <protocol> mjpeg </protocol>
+    </connection>
+
+
+<!-- Views connections -->
+
+
+	<connection>
+		<from>/yarpOpenPose/image:o</from>
+		<to>/viewer/skeleton</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+<!-- visualize heatmap bbox from vtd -->
+	<connection>
+		<from>/vtd_bbox/image:o</from>
+		<to>/view/bbox</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+	
+    <!-- visualize selected object bbox from aod -->
+	<connection>
+		<from>/aod/detect:o</from>
+		<to>/view/bbox_final</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+	
+	<connection>
+		<from>/detection/image:o </from>
+		<to>/viewer/detection</to>
+		<protocol> mjpeg </protocol>
+	</connection>
+
+	<connection>
+		<from>/vtd_bbox/normMap:o </from>
+		<to>/viewer/normMap</to>
+		<protocol> mjpeg </protocol>
+	</connection>
+
+</application>

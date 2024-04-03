@@ -1,0 +1,104 @@
+
+<application>
+<name>AOD-ObjDet-VTD-OpenPose</name>
+<version>1.0</version>
+
+<!-- Modules -->
+
+
+	<module>
+		<name>yarpOpenPose</name>
+		<parameters>--from </parameters>
+		<node>localhost</node>
+	</module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /view/rgb_propag --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /view/bbox_final --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
+    <module>
+		<name>yarpview</name>
+		<parameters>--name /view/bbox --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
+    <module>
+		<name>yarpview</name>
+		<parameters>--name /view/thresh --w 640 --h 480</parameters>
+		<node>localhost</node>
+	</module>
+
+<!-- Connections -->
+
+    <!-- raw image from realsense to OpenPose input -->
+	<connection>
+		<from>/depthCamera/rgbImage:o</from>
+		<to>/yarpOpenPose/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+    <!-- propagated image through OpenPose to vtd input -->
+	<connection>
+		<from>/yarpOpenPose/propag:o</from>
+		<to>/vtd_bbox/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+	<!-- yarpopenpose data to vtd input -->
+    <connection>
+		<from>/yarpOpenPose/target:o</from>
+		<to>/vtd_bbox/data:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+    <!-- visualize heatmap bbox from vtd -->
+	<connection>
+		<from>/vtd_bbox/image:o</from>
+		<to>/view/bbox</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+    <!-- visualize thresholded heatmap from vtd -->
+	<connection>
+		<from>/vtd_bbox/thresh:o</from>
+		<to>/view/thresh</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+    <!-- RGB propagated through vtd_bbox input for aod -->
+	<connection>
+		<from>/vtd_bbox/propag:o</from>
+		<to>/aod/image:i</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+	<!-- heatmap bbox data to aod input -->
+    <connection>
+		<from>/vtd_bbox/hm_bbox:o</from>
+		<to>/aod/hmbbox:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+	<!-- object detection data to aod input -->
+    <connection>
+		<from>/detection/dets:o</from>
+		<to>/aod/objdet:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+    <!-- visualize selected object bbox from aod -->
+	<connection>
+		<from>/aod/detect:o</from>
+		<to>/view/bbox_final</to>
+		<protocol>mjpeg</protocol>
+	</connection>
+
+</application>

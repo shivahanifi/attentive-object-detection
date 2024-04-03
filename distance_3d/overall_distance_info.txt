@@ -1,0 +1,2 @@
+Overall mean for distance is: 0.09274906764488117
+std is: 0.12727709690332803
